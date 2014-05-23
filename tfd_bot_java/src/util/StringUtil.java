@@ -12,6 +12,20 @@ package util;
  * @Author 		: NCri
  */
 public class StringUtil {
+	/**
+	 * 
+	 * @method Name	: join
+	 * @date   		: 2014. 5. 23. 
+	 * @author   	: NCri
+	 * @description :
+	 * @param join
+	 * @param strings
+	 * @return
+	 * @example
+	 * 			String joined;
+	 * 			joined = join(" and ","7, 7, 7", "Bill", "Bob", "Steve", "[Bill]", "1,2,3", "Apple ][","~,~");
+	 * 			joined = join(" and ", array);
+	 */
 	public static String join(String join, String... strings) {
 	    if (strings == null || strings.length == 0) {
 	        return "";
