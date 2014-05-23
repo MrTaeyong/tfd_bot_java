@@ -19,7 +19,8 @@ public interface ParserInterface {
 	 * @author   	: NCri
 	 * @description :
 	 */
-	public void getResult();
+	
+	public void getResult(String keyword);
 	
 	
 }
