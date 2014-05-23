@@ -6,11 +6,22 @@
  */
 package parser.google;
 
+import parser.ParserInterface;
+
 /**
  * @Class		: GooglePlace
  * @Date 		: 2014. 5. 23.
  * @Author 		: NCri
  */
-public class GooglePlace {
+public class GooglePlace implements ParserInterface{
+	/* (non-Javadoc)
+	 * @see parser.ParserInterface#getResult()
+	 */
+	@Override
+	public void getResult() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 
 }
