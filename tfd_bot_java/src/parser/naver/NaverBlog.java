@@ -1,4 +1,4 @@
-package parser;
+package parser.naver;
 
 class NaverBlog extends NaverSearch{
 
