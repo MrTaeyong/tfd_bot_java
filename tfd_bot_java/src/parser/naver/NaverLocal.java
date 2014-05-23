@@ -1,12 +1,15 @@
 package parser.naver;
 
-class NaverLocal extends NaverSearch {
+import parser.Connector;
 
+class NaverLocal extends NaverSearch{	
+	public NaverLocal(){
+		super();
+	}
+	
 	@Override
 	public void getResult(String keyword) {
 		// TODO Auto-generated method stub
 		
 	}
-
-
 }

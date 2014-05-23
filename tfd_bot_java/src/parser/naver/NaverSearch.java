@@ -1,9 +1,11 @@
 package parser.naver;
 
+import java.util.Map;
+
 import parser.ParserInterface;
+import parser.Connector;
 
 public class NaverSearch implements ParserInterface{
-	private String _API_KEY = "";
 	public NaverSearch(){
 		
 	}
