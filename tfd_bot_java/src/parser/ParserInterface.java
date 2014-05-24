@@ -20,7 +20,5 @@ public interface ParserInterface {
 	 * @description :
 	 */
 	
-	public void getResult(String keyword);
-	
-	
+	public Object getResult(String keyword);
 }
