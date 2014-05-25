@@ -31,21 +31,35 @@ public class GooglePlaceConnector extends Connector{
 	private String _returnType = "json";
 	private String _language = "ko";
 	private String _sensor = "true";
-	private ArrayList<String> _function;
 	private String _keyword;
+	
+	private ArrayList<String> _functions;
+	private ArrayList<String> _urlFormats;
 	
 	private int _type = -1;
 
-	public final int PLACE = 0;
+	public final static int TEXT_SEARCH = 0;
+	// DETAIL 검색과 사진 정보는 TEXT_SEARCH를 한 후 Reference Token
+	// 을 통해서 이뤄지기 때문에 TEXT_SEARCH 가 Public으로 해두는 것이 맞다.
+	private final static int DETAIL_SEARCH = 1;
+	private final static int INFO_PHOTO = 2;
+	
 
 	public GooglePlaceConnector(int type){
 		_type = type;
 
 		// init api function 
-		_function = new ArrayList<String>();
-		_function.add("textsearch");
-		_function.add("details");
-		_function.add("photo");
+		_functions = new ArrayList<String>();
+		_functions.add("textsearch");
+		_functions.add("details");
+		_functions.add("photo");
+		
+		// init url
+		_urlFormats = new ArrayList<String>();
+		_urlFormats.add("https://maps.googleapis.com/maps/api/place/textsearch/json?query=%s&sensor=true&language=ko&key=%s");
+		_urlFormats.add("https://maps.googleapis.com/maps/api/place/details/json?reference=%s&sensor=true&language=ko&key=%s");
+		_urlFormats.add("https://maps.googleapis.com/maps/api/place/photo?maxwidth=%s&photoreference=%s&sensor=true&language=ko&key=%s");
+		
 	}
 	/* (non-Javadoc)
 	 * @see parser.Connector#connect(java.lang.String)
@@ -54,11 +68,18 @@ public class GooglePlaceConnector extends Connector{
 	public Object connect(String keyword) {
 		// TODO Auto-generated method stub
 		
-		_keyword = keyword;
+		_keyword = keyword.replace(" ", "+");
 		
 		try {
+			/*
+			 * https://maps.googleapis.com/maps/api/place/textsearch/json?query=""&sensor=true&language=ko&key=""
+			 * https://maps.googleapis.com/maps/api/place/details/json?reference=""&sensor=true&language=ko&key=""
+			 * https://maps.googleapis.com/maps/api/place/photo?maxwidth=""&photoreference=""&sensor=true&language=ko&key=""
+			 */
+			
 			// GooglePlace API 호출 주소를 초기화.
-			URL url = _getURL();
+			String urlFormat = _urlFormats.get(_type);
+			URL url = new URL(String.format(urlFormat, _keyword, _API_KEY));
 			URLConnection connection = url.openConnection();
 			connection.connect();
 
@@ -77,16 +98,6 @@ public class GooglePlaceConnector extends Connector{
 			e.printStackTrace();
 			return null;
 		}
-	}
-	
-	protected URL _getURL(){
-		/*
-		 * https://maps.googleapis.com/maps/api/place/textsearch/json?query=""&sensor=true&language=ko&key=""
-		 * https://maps.googleapis.com/maps/api/place/details/json?reference=""&sensor=true&language=ko&key=""
-		 * https://maps.googleapis.com/maps/api/place/photo?maxwidth=""&photoreference=""&sensor=true&language=ko&key=""
-		 */
-		String spec = _BASE_URL; 
-		return null;
 	}
 	
 	protected Map jsonToMap(BufferedReader json){

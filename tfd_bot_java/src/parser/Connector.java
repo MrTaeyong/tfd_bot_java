@@ -3,6 +3,7 @@ package parser;
 import java.util.HashMap;
 import java.util.Map;
 
+import parser.google.GooglePlaceConnector;
 import parser.naver.NaverConnector;
 
 abstract public class Connector {
@@ -18,7 +19,7 @@ abstract public class Connector {
 		// init instance
 		instanceMap.put(NAVER_LOCAL, new NaverConnector(NAVER_LOCAL));
 		instanceMap.put(NAVER_BLOG, new NaverConnector(NAVER_BLOG));
-		instanceMap.put(GOOGLE_PLACE, new GooglePlaceConnector());
+		instanceMap.put(GOOGLE_PLACE, new GooglePlaceConnector(GooglePlaceConnector.TEXT_SEARCH));
 		
 		return instanceMap.get(type);
 	}
