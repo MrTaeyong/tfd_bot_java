@@ -44,8 +44,11 @@ public class NaverConnector extends Connector{
                 _start = 1000;
                 _display = 100; // 1000~1099
 			}
-			else if(_start > 1100)
+			else if(_start > 1100){
+				_start = 1;
+				_display = 100;
 				return null;	// When reached limit of Naver API, null is returned.
+			}
 //			else if(_start == 201)
 //				return null;
 			
