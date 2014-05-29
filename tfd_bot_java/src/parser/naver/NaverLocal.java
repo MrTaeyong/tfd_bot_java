@@ -10,8 +10,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
-import controller.Controller;
-import controller.DBController;
+import util.CoordinateConverter;
+import util.GeoPoint;
 
 class NaverLocal extends NaverSearch{	
 	public NaverLocal(){
@@ -69,13 +69,38 @@ class NaverLocal extends NaverSearch{
 	}
 	
 	public static void main(String[] args){
-		NaverSearch ns = NaverSearch.getInstance(NAVER_LOCAL);
-		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 식당");
+//		NaverSearch ns = NaverSearch.getInstance(NAVER_LOCAL);
+//		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 식당");
+//		for (Map<String, String> obj : r){
+//			URL url;
+//			try {
+//				System.out.println(obj.get("url"));
+//				url = new URL(obj.get("url"));
+//				URLConnection connection = url.openConnection();
+//				connection.connect();
+//				BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//				BufferedWriter bw = new BufferedWriter(new FileWriter("/Volumes/Macintosh/urltest.txt", true));
+//				String tmp;
+//				while((tmp = br.readLine()) != null){
+//					bw.write(tmp + "\n");
+//				}
+//				bw.write("\n\n\n\n\n\n\n\n");
+//				bw.close();
+//			} catch (MalformedURLException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+//		}
+//		
 //		for (Map<String, String> obj : r){
 //			System.out.println(obj);
 //		}
-		DBController dbcon = (DBController) Controller.newInstance(Controller.DATABASE);
-		dbcon.insertData("place_info_test", r);
+//		DBController dbcon = (DBController) Controller.newInstance(Controller.DATABASE);
+//		dbcon.insertData("place_info_test", r);
 //		for(Map<String, String> a : r){
 //			System.out.println("title : " + a.get("title"));
 //			System.out.println("category : " + a.get("category"));
