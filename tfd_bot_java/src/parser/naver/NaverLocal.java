@@ -10,6 +10,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
+import controller.Controller;
+import controller.DBController;
 
 class NaverLocal extends NaverSearch{	
 	public NaverLocal(){
@@ -43,16 +45,16 @@ class NaverLocal extends NaverSearch{
 		Elements elements = doc.getElementsByTag("item");
 		for(Element e : elements){
 			resultMap = new HashMap<String, String>();
-			resultMap.put("title", e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", ""));
+			resultMap.put("name", e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", ""));
 //			resultMap.put("title", e.getElementsByTag("title").text());
 			resultMap.put("category", e.getElementsByTag("category").text());
 			resultMap.put("telephone", e.getElementsByTag("telephone").text());
 			resultMap.put("address", e.getElementsByTag("address").text());
 			resultMap.put("description", e.getElementsByTag("description").text().replaceAll("(<b>|</b>)", ""));
 //			resultMap.put("description", e.getElementsByTag("description").text());
-			resultMap.put("link", _getLink(e.toString()));
-			resultMap.put("mapx", e.getElementsByTag("mapx").text());
-			resultMap.put("mapy", e.getElementsByTag("mapy").text());
+			resultMap.put("url", _getLink(e.toString()));
+//			resultMap.put("pointX", e.getElementsByTag("mapx").text());
+//			resultMap.put("pointY", e.getElementsByTag("mapy").text());
 			resultList.add(resultMap);
 		}
 		return resultList;
@@ -66,9 +68,14 @@ class NaverLocal extends NaverSearch{
 		return item;
 	}
 	
-//	public static void main(String[] args){
-//		NaverSearch ns = NaverSearch.getInstance(NAVER_LOCAL);
-//		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("강남 식당");
+	public static void main(String[] args){
+		NaverSearch ns = NaverSearch.getInstance(NAVER_LOCAL);
+		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 식당");
+//		for (Map<String, String> obj : r){
+//			System.out.println(obj);
+//		}
+		DBController dbcon = (DBController) Controller.newInstance(Controller.DATABASE);
+		dbcon.insertData("place_info_test", r);
 //		for(Map<String, String> a : r){
 //			System.out.println("title : " + a.get("title"));
 //			System.out.println("category : " + a.get("category"));
@@ -79,5 +86,5 @@ class NaverLocal extends NaverSearch{
 //			System.out.println("mapy : " + a.get("mapy"));
 //			System.out.println("link : " + a.get("link"));
 //		}
-//	}
+	}
 }
