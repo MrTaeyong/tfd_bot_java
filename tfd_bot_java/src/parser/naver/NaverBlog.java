@@ -1,3 +1,9 @@
+/**
+ * @FileName	: NaverBlog.java
+ * @Project		: tfd_java_bot
+ * @Date		: 2014. 05. 25.
+ * @Author		: Taeyong
+ */
 package parser.naver;
 
 import java.io.BufferedReader;
@@ -16,6 +22,11 @@ import org.jsoup.select.Elements;
 
 import parser.Connector;
 
+/**
+ * @Class	: NaverBlog
+ * @Date	: 2014. 05. 25. 
+ * @Author	: Taeyong
+ */
 class NaverBlog extends NaverSearch{
 	public NaverBlog(){
 		super();
@@ -154,21 +165,4 @@ class NaverBlog extends NaverSearch{
 		item = item.substring(start+8, end);
 		return item;
 	}
-	
-//	public static void main(String[] args) throws IOException{
-//		ArrayList<Map<String, String>> result;
-//		NaverSearch ns = NaverSearch.getInstance(NAVER_BLOG);
-//		result = (ArrayList<Map<String, String>>) ns.getResult("홍대 식당");
-//		
-//		BufferedWriter bw = new BufferedWriter(new FileWriter("/Volumes/Macintosh/test.txt", true));
-//		for(Map<String, String> m : result){
-//			bw.write("title : " + m.get("title")); bw.newLine();
-//			bw.write("bloggerName : " + m.get("bloggerName")); bw.newLine();
-//			bw.write("bloggerLink : " + m.get("bloggerLink")); bw.newLine();
-//			bw.write("content :\n" + m.get("blogContent")); bw.newLine();
-//			bw.write("================================================================================");
-//			bw.newLine();
-//		}
-//		bw.close();
-//	}
 }

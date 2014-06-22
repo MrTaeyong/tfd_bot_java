@@ -1,24 +1,29 @@
+/**
+ * @FileName	: NaverSearch.java
+ * @Project		: tfd_java_bot
+ * @Date		: 2014. 05. 23.
+ * @Author		: Taeyong
+ */
 package parser.naver;
-
-import java.util.ArrayList;
 
 import parser.ParserInterface;
 
+/**
+ * @Class	: NaverSearch
+ * @Date	: 2014. 05. 23. 
+ * @Author	: Taeyong
+ */
 abstract public class NaverSearch implements ParserInterface{
-	public final static int NAVER_LOCAL = 0;
-	public final static int NAVER_BLOG = 1;
+	public static enum SearchType { NAVER_LOCAL, NAVER_BLOG }
 
 	@Override
-	public Object getResult(String keyword) {
-		// TODO Auto-generated method stub
-		// Child class must overriding this method.
-		return null;
-	}
+	abstract public Object getResult(String keyword);
 	
-	public static NaverSearch getInstance(int type){
-		ArrayList<NaverSearch> instance = new ArrayList<NaverSearch>();
-		instance.add(new NaverLocal());
-		instance.add(new NaverBlog());
-		return instance.get(type);
+	public static NaverSearch getInstance(SearchType type){
+		switch(type){
+		case NAVER_LOCAL : return new NaverLocal();
+		case NAVER_BLOG : return new NaverBlog();
+		default : return null;
+		}
 	}
 }

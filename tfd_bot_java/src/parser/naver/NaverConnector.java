@@ -1,3 +1,9 @@
+/**
+ * @FileName	: NaverConnector.java
+ * @Project		: tfd_java_bot
+ * @Date		: 2014. 05. 23.
+ * @Author		: Taeyong
+ */
 package parser.naver;
 
 import java.io.BufferedReader;
@@ -9,6 +15,11 @@ import java.net.URLConnection;
 
 import parser.Connector;
 
+/**
+ * @Class	: NaverConnector
+ * @Date	: 2014. 05. 23. 
+ * @Author	: Taeyong
+ */
 public class NaverConnector extends Connector{
 	final private String _API_KEY = "a0504c8ef72934d16be6d2a29e5b69aa";
 	final private String _BASE_URL;

@@ -1,5 +1,16 @@
+/**
+ * @FileName	: TwitterConnector.java
+ * @Project		: tfd_java_bot
+ * @Date		: 2014. 06. 02.
+ * @Author		: Taeyong
+ */
 package parser.twitter;
 
+/**
+ * @Class	:TwitterConnector
+ * @Date	: 2014. 06. 02.
+ * @Author	: Taeyong
+ */
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +40,8 @@ public class TwitterConnector extends Connector{
 		cb.setOAuthAccessTokenSecret(_OAUTH_ACCESS_TOKEN_SECRET);
 		Twitter twitter = new TwitterFactory(cb.build()).getInstance();
 		Query query = new Query(keyword);
+		query.count(100);
+		query.setSince("2010-01-01");
 		QueryResult queryResult;
 		try {
 			queryResult = twitter.search(query);
