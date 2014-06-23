@@ -35,5 +35,5 @@ abstract public class Controller {
 		return instance;
 	}
 	abstract public void insertData(String tableName, ArrayList<Map<String, String>> insertDatas);
-	abstract public void getData(String query);	
+	abstract public Map<String, String> getData(String query);	
 }
