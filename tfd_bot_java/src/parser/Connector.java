@@ -12,6 +12,7 @@ abstract public class Connector {
 	public final static int NAVER_BLOG = 1;
 	public final static int GOOGLE_PLACE = 2;
 	public final static int TWITTER = 3;
+	public final static int NAVER_IMAGE = 4;
 	
 	protected String _baseURL;
 	protected int type;
@@ -23,6 +24,7 @@ abstract public class Connector {
 		instanceMap.put(NAVER_BLOG, new NaverConnector(NAVER_BLOG));
 		instanceMap.put(GOOGLE_PLACE, new GooglePlaceConnector(GooglePlaceConnector.TEXT_SEARCH));
 		instanceMap.put(TWITTER, new TwitterConnector());
+		instanceMap.put(NAVER_IMAGE, new NaverConnector(NAVER_IMAGE));
 		
 		return instanceMap.get(type);
 	}

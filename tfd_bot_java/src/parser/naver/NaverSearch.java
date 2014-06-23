@@ -14,7 +14,7 @@ import parser.ParserInterface;
  * @Author	: Taeyong
  */
 abstract public class NaverSearch implements ParserInterface{
-	public static enum SearchType { NAVER_LOCAL, NAVER_BLOG }
+	public static enum SearchType { NAVER_LOCAL, NAVER_BLOG, NAVER_IMAGE }
 
 	@Override
 	abstract public Object getResult(String keyword);
@@ -23,6 +23,7 @@ abstract public class NaverSearch implements ParserInterface{
 		switch(type){
 		case NAVER_LOCAL : return new NaverLocal();
 		case NAVER_BLOG : return new NaverBlog();
+		case NAVER_IMAGE : return new NaverImage();
 		default : return null;
 		}
 	}

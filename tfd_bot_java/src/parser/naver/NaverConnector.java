@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import parser.Connector;
 
@@ -27,8 +29,11 @@ public class NaverConnector extends Connector{
 	private static int _display;
 	
 	public NaverConnector(int type){
-		String[] target = {"local", "blog"};  
-		_BASE_URL = "http://openapi.naver.com/search?target=" + target[type];
+		Map<Integer, String> target = new HashMap<Integer, String>();
+		target.put(Connector.NAVER_LOCAL, "local");
+		target.put(Connector.NAVER_BLOG, "blog");
+		target.put(Connector.NAVER_IMAGE, "image");
+		_BASE_URL = "http://openapi.naver.com/search?target=" + target.get(type);
 		_start = 1;
 		_display = 100;
 	}
@@ -82,5 +87,13 @@ public class NaverConnector extends Connector{
 	private String _getParam(String keyword){
 		return String.format("key=%s&query=%s&display=%d&start=%d",
 				_API_KEY, keyword.replace(" ", "+"), _display, _start);
+	}
+	
+	public void setStart(int start){
+		this._start = start;
+	}
+	
+	public void setDisplay(int display){
+		this._display = display;
 	}
 }

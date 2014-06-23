@@ -11,7 +11,7 @@ package util;
  * @Date	: 2014. 05. 29.
  * @Author	: Taeyong
  */
-public class CoordinateConverter {
+public class CoordinatesConverter {
 	
 	/**
 	 * Katech 좌표계를 WGS84 좌표계로 변환하는 메소드
