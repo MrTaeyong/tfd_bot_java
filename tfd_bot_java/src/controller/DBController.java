@@ -26,7 +26,12 @@ public class DBController extends Controller {
 	public static final String PLACE_FIELD_TELE = "telephone";
 	public static final String PLACE_FIELD_URL = "url";
 	public static final String PLACE_FIELD_DESC = "description";
+	public static final String PLACE_FIELD_POINT_X = "pointx";
+	public static final String PLACE_FIELD_POINT_Y = "pointy";
 	
+	public void getData(String query){
+		
+	}
 	/**
 	 * 
 	 * @method Name : insertData
@@ -39,17 +44,19 @@ public class DBController extends Controller {
 	 */
 	public void insertData(String tableName, ArrayList<Map<String, String>> insertDatas) {
 		/*	place_info tables
-		 * +-------------+------------------+------+-----+---------+-------+
-		 * | Field       | Type             | Null | Key | Default | Extra |
-		 * +-------------+------------------+------+-----+---------+-------+
-		 * | id          | int(10) unsigned | NO   |     | 0       |       |
-		 * | name        | varchar(50)      | NO   |     | -       |       |
-		 * | category    | varchar(50)      | NO   |     | -       |       |
-		 * | address     | varchar(100)     | NO   |     | -       |       |
-		 * | telephone   | varchar(20)      | NO   |     | -       |       |
-		 * | url         | varchar(250)     | YES  |     | -       |       |
-		 * | description | varchar(1000)    | YES  |     | -       |       |
-		 * +-------------+------------------+------+-----+---------+-------+
+		 * +-------------+------------------+------+-----+---------+----------------+
+		 * | Field       | Type             | Null | Key | Default | Extra          |
+		 * +-------------+------------------+------+-----+---------+----------------+
+		 * | id          | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
+		 * | name        | varchar(50)      | NO   |     | -       |                |
+		 * | category    | varchar(50)      | NO   |     | -       |                |
+		 * | address     | varchar(100)     | NO   |     | -       |                |
+		 * | telephone   | varchar(20)      | YES  |     | -       |                |
+		 * | url         | varchar(300)     | YES  |     | NULL    |                |
+		 * | description | varchar(1000)    | YES  |     | -       |                |
+		 * | pointx      | float            | NO   |     | NULL    |                |
+		 * | pointy      | float            | NO   |     | NULL    |                |
+		 * +-------------+------------------+------+-----+---------+----------------+
 		 */
 		Connection con = null;
 
@@ -60,7 +67,7 @@ public class DBController extends Controller {
 			System.out.println("DB load success");
 			
 			// create query string.
-			String queryFormat = " insert into " + tableName + " (name, category, address, telephone, url, description)"
+			String queryFormat = " insert into " + tableName + " (name, category, address, telephone, url, description, pointx, pointy)"
 					+ " values (?, ?, ?, ?, ?, ?)";
 
 			// create the mysql insert preparedstatement

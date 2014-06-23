@@ -6,14 +6,26 @@
  */
 package controller;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 /**
  * @Class		: Controller
  * @Date 		: 2014. 5. 27.
  * @Author 		: NCri
  */
 abstract public class Controller {
-	public static final int DATABASE = 0;
+	public static final int DATABASE = 0; // Instance Tag 상수.
 	
+	/**
+	 * 
+	 * @method Name	: newInstance
+	 * @date   		: 2014. 5. 27. 
+	 * @author   	: NCri
+	 * @description :
+	 * @param type
+	 * @return
+	 */
 	public static Controller newInstance(int type){
 		Controller instance = null; 
 		
@@ -22,4 +34,6 @@ abstract public class Controller {
 		
 		return instance;
 	}
+	abstract public void insertData(String tableName, ArrayList<Map<String, String>> insertDatas);
+	abstract public void getData(String query);	
 }
