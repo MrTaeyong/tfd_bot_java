@@ -1,6 +1,6 @@
 /**
  * @FileName	: TwitterParsing.java
- * @Project		: tfd_java_bot
+ * @Project		: tfd_bot_java
  * @Date		: 2014. 06. 19.
  * @Author		: Taeyong
  */

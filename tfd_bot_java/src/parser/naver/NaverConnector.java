@@ -1,6 +1,6 @@
 /**
  * @FileName	: NaverConnector.java
- * @Project		: tfd_java_bot
+ * @Project		: tfd_bot_java
  * @Date		: 2014. 05. 23.
  * @Author		: Taeyong
  */
