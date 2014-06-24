@@ -6,6 +6,8 @@
  */
 package util;
 
+import java.util.List;
+
 /**
  * @Class		: StringUtil
  * @Date 		: 2014. 5. 23.
@@ -26,18 +28,19 @@ public class StringUtil {
 	 * 			joined = join(" and ","7, 7, 7", "Bill", "Bob", "Steve", "[Bill]", "1,2,3", "Apple ][","~,~");
 	 * 			joined = join(" and ", array);
 	 */
-	public static String join(String join, String... strings) {
-	    if (strings == null || strings.length == 0) {
-	        return "";
-	    } else if (strings.length == 1) {
-	        return strings[0];
-	    } else {
-	        StringBuilder sb = new StringBuilder();
-	        sb.append(strings[0]);
-	        for (int i = 1; i < strings.length; i++) {
-	            sb.append(join).append(strings[i]);
-	        }
-	        return sb.toString();
+	public static String join(List<String> list, String delim) {
+	    StringBuilder sb = new StringBuilder();
+
+	    String loopDelim = "";
+
+	    for(String s : list) {
+
+	        sb.append(loopDelim);
+	        sb.append(s);            
+
+	        loopDelim = delim;
 	    }
+
+	    return sb.toString();
 	}
 }
