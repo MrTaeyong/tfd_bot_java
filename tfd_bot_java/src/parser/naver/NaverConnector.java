@@ -27,6 +27,7 @@ public class NaverConnector extends Connector{
 	final private String _BASE_URL;
 	private static int _start;
 	private static int _display;
+//	private static boolean _isMaximum;
 	
 	public NaverConnector(int type){
 		Map<Integer, String> target = new HashMap<Integer, String>();
@@ -36,6 +37,7 @@ public class NaverConnector extends Connector{
 		_BASE_URL = "http://openapi.naver.com/search?target=" + target.get(type);
 		_start = 1;
 		_display = 100;
+//		_isMaximum = true;
 	}
 	
 	@Override
@@ -52,22 +54,6 @@ public class NaverConnector extends Connector{
 			URLConnection connection = url.openConnection();
 			BufferedReader bufferedData = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			
-			// Modify static variable _start and _display for next step.
-			_start += 100;
-			if(_start == 901)
-				_display = 99; // 901~999
-			else if(_start == 1001){
-                _start = 1000;
-                _display = 100; // 1000~1099
-			}
-			else if(_start > 1100){
-				_start = 1;
-				_display = 100;
-				return null;	// When reached limit of Naver API, null is returned.
-			}
-//			else if(_start == 201)
-//				return null;
-			
 			// Convert data of BufferedReader type to String type
 			String tmp;
 			while((tmp = bufferedData.readLine()) != null)
@@ -75,25 +61,31 @@ public class NaverConnector extends Connector{
 			return xmlData;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
+			System.out.println("MalformedURLException is occured");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
+			System.out.println("IOException is occured");
 		}
 		// When exception is occured null is returned.
 		return null;
-	}	
+	}
+	
+	public Object connect(String keyword, int start, int display){
+		this._start = start;
+		this._display = display;
+		return connect(keyword);
+	}
 	
 	private String _getParam(String keyword){
 		return String.format("key=%s&query=%s&display=%d&start=%d",
 				_API_KEY, keyword.replace(" ", "+"), _display, _start);
 	}
 	
-	public void setStart(int start){
+	public void setRange(int start, int display){
 		this._start = start;
-	}
-	
-	public void setDisplay(int display){
 		this._display = display;
+//		this._isMaximum = false;
 	}
 }

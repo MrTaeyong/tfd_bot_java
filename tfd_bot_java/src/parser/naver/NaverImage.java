@@ -22,28 +22,26 @@ public class NaverImage extends NaverSearch {
 	@Override
 	public Object getResult(String keyword) {
 		// TODO Auto-generated method stub
-		Connector connector;
+		int start = 1, display = 5;
+		NaverConnector connector;
 		String xmlData;
-		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+		ArrayList<Map<String, String>> resultList = null;
 		
-		connector = Connector.getInstance(Connector.NAVER_IMAGE);
-		((NaverConnector)connector).setStart(1);
-		((NaverConnector)connector).setDisplay(5);
+		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_IMAGE);
 		
 		// Receive all XML data possible and generate resulList.
-		xmlData = (String)connector.connect(keyword);
-		while(xmlData != null){
-			resultList.addAll(_getData(xmlData));
-			xmlData = (String)connector.connect(keyword);
-		}
+		xmlData = (String)connector.connect(keyword, start, display);
+		resultList = _getData(xmlData);
 		
 		// Return result list.
-		if(resultList.size() > 0)
+		if(resultList != null && resultList.size() > 0)
 			return resultList;
 		return null;
 	}
 	
 	private ArrayList<Map<String, String>> _getData(String xmlData){
+		if(xmlData == null || xmlData.length() < 1)
+			return null;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		Map<String, String> resultMap;
 		Document doc = Jsoup.parse(xmlData);
@@ -64,12 +62,13 @@ public class NaverImage extends NaverSearch {
 	}
 	
 	public static void main(String[] args) throws IOException{
+		String keyword = "더부페";
 		ArrayList<Map<String, String>> result;
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_IMAGE);
-		result = (ArrayList<Map<String,String>>)ns.getResult("구이가 홍대");
+		result = (ArrayList<Map<String,String>>)ns.getResult(keyword);
 		
 		FileWriter fw = new FileWriter(new File("test.txt"));
-		fw.write("구이가 홍대\n\n");
+		fw.write(keyword + "\n\n");
 		for(Map<String, String> r : result){
 			fw.write("link\t:" + r.get("link") + "\n");
 			fw.write("width\t:" + r.get("width") + "\n");

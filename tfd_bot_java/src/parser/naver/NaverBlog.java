@@ -33,17 +33,26 @@ class NaverBlog extends NaverSearch{
 	}
 
 	public Object getResult(String keyword) {
-		Connector connector;
+		int start = 1, display = 100;
+		NaverConnector connector;
 		String xmlData;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		 
-		connector = Connector.getInstance(Connector.NAVER_BLOG);
+		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_BLOG);
 		
 		// Receive all XML data possible and generate resulList.
-		xmlData = (String)connector.connect(keyword);
-		while(xmlData != null){
+		while(true){
+			xmlData = (String)connector.connect(keyword, start, display);
+			if(xmlData == null)
+				break;
 			resultList.addAll(_getData(xmlData));
-			xmlData = (String)connector.connect(keyword);
+			start += 100;
+			if(start == 901)
+				display = 99; // 901~999
+			else if(start == 1001){
+	            start = 1000;
+	            display = 100; // 1000~1099
+			}
 		}
 		
 		// Return result list.
@@ -53,6 +62,8 @@ class NaverBlog extends NaverSearch{
 	}
 	
 	private ArrayList<Map<String, String>> _getData(String xmlData){
+		if(xmlData == null || xmlData.length() < 1)
+			return null;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String,String>>();
 		Map<String, String> resultMap;
 		Document doc = Jsoup.parse(xmlData);
