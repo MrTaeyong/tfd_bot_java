@@ -16,7 +16,7 @@ import java.util.Map;
  * @Author : NCri
  */
 public abstract class DBController{
-	enum Type{
+	public static enum Type{
 		TFD
 	}
 	public static DBController newInstance(Type db){

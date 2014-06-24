@@ -17,7 +17,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
-import controller.Controller;
+import util.CoordinatesConverter;
+import util.GeoPoint;
 import controller.DBController;
 
 /**
@@ -39,7 +40,7 @@ class NaverLocal extends NaverSearch{
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_LOCAL);
 		
 		// Receive all XML data possible and generate resulList.
-		xmlData = (String)connector.connect(keyword);
+//		xmlData = (String)connector.connect(keyword);
 		while(true){
 			xmlData = (String)connector.connect(keyword, start, display);
 			if(xmlData == null)
@@ -75,8 +76,9 @@ class NaverLocal extends NaverSearch{
 			resultMap.put("address", e.getElementsByTag("address").text());
 			resultMap.put("description", e.getElementsByTag("description").text().replaceAll("(<b>|</b>)", ""));
 			resultMap.put("url", _getLink(e.toString()));
-			resultMap.put("pointX", e.getElementsByTag("mapx").text());
-			resultMap.put("pointY", e.getElementsByTag("mapy").text());
+			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
+			resultMap.put("pointx", String.format("%f", gp.getX())); 
+			resultMap.put("pointy", String.format("%f", gp.getY()));
 			resultList.add(resultMap);
 		}
 		return resultList;
@@ -92,8 +94,8 @@ class NaverLocal extends NaverSearch{
 	
 	public static void main(String[] args) throws IOException{
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_LOCAL);
-		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("문래동 식당");
-		DBController dbcon = (DBController) Controller.newInstance(Controller.DATABASE);
+		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 공원");
+		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		dbcon.insertData("place_info_test", r);
 	}
 }

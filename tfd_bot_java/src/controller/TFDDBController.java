@@ -167,19 +167,21 @@ public class TFDDBController extends DBController{
 			String values = generateValues(insertData);
 			
 			String queryFormat = " insert into " + tableName + columns
-					+ " " + values;
+					+ " values" + values;
 			// create the mysql insert preparedstatement
 			PreparedStatement preparedStmt = con.prepareStatement(queryFormat);
-
+			ArrayList<String> keySequence = new ArrayList<String>(insertData.keySet());
 			for(Map<String, String> data : insertDatas){
-				preparedStmt.setString(1, data.get(TFDDBController.Place.NAME));
-				preparedStmt.setString(2, data.get(TFDDBController.Place.CATEGORY));
-				preparedStmt.setString(4, data.get(TFDDBController.Place.ADDRESS));
-				preparedStmt.setString(3, data.get(TFDDBController.Place.TELEPHONE));
-				preparedStmt.setString(5, data.get(TFDDBController.Place.URL));
-				preparedStmt.setString(6, data.get(TFDDBController.Place.DESC));
-				preparedStmt.setFloat(7, Float.valueOf(data.get(TFDDBController.Place.POINT_X)));
-				preparedStmt.setFloat(8, Float.valueOf(data.get(TFDDBController.Place.POINT_Y)));
+				for(int i = 0; i < keySequence.size(); i++)
+					preparedStmt.setString(i+1, data.get(keySequence.get(i)));
+//				preparedStmt.setString(1, data.get(TFDDBController.Place.NAME.value()));
+//				preparedStmt.setString(2, data.get(TFDDBController.Place.CATEGORY.value()));
+//				preparedStmt.setString(4, data.get(TFDDBController.Place.ADDRESS.value()));
+//				preparedStmt.setString(3, data.get(TFDDBController.Place.TELEPHONE.value()));
+//				preparedStmt.setString(5, data.get(TFDDBController.Place.URL.value()));
+//				preparedStmt.setString(6, data.get(TFDDBController.Place.DESC.value()));
+//				preparedStmt.setFloat(7, Float.valueOf(data.get(TFDDBController.Place.POINT_X.value())));
+//				preparedStmt.setFloat(8, Float.valueOf(data.get(TFDDBController.Place.POINT_Y.value())));
 
 				// execute the preparedstatement
 				preparedStmt.execute();

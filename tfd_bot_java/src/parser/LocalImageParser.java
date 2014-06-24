@@ -9,8 +9,8 @@ package parser;
 import java.util.ArrayList;
 import java.util.Map;
 
-import controller.Controller;
 import parser.naver.NaverSearch;
+import controller.DBController;
 
 /**
  * @Class	: LocalImageParser
@@ -20,7 +20,7 @@ import parser.naver.NaverSearch;
 public class LocalImageParser {
 	public static void main(String[] args) {
 		ArrayList<Map<String, String>> queryResult, searchResult;
-		Controller controller = Controller.newInstance(Controller.DATABASE);
+		DBController controller = DBController.newInstance(DBController.Type.TFD);
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_IMAGE);
 		queryResult = (ArrayList<Map<String, String>>) controller.getData("select id, name from place_info_test");
 		for(Map<String, String> r : queryResult){
