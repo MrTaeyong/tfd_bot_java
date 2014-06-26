@@ -77,8 +77,8 @@ class NaverLocal extends NaverSearch{
 			resultMap.put("description", e.getElementsByTag("description").text().replaceAll("(<b>|</b>)", ""));
 			resultMap.put("url", _getLink(e.toString()));
 			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
-			resultMap.put("pointx", String.format("%f", gp.getX())); 
-			resultMap.put("pointy", String.format("%f", gp.getY()));
+			resultMap.put("pointx", String.format("%.8f", gp.getX())); 
+			resultMap.put("pointy", String.format("%.8f", gp.getY()));
 			resultList.add(resultMap);
 		}
 		return resultList;
@@ -94,7 +94,7 @@ class NaverLocal extends NaverSearch{
 	
 	public static void main(String[] args) throws IOException{
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_LOCAL);
-		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 공원");
+		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 멀티방");
 		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		dbcon.insertData("place_info_test", r);
 	}

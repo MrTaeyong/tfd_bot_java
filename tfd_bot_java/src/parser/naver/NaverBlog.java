@@ -7,6 +7,8 @@
 package parser.naver;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -28,6 +30,17 @@ import parser.Connector;
  * @Author	: Taeyong
  */
 class NaverBlog extends NaverSearch{
+	public static enum FieldName {
+		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"), BLOGGER_LINK("bloggerLink");
+		String value;
+		FieldName(String value){
+			this.value = value;
+		}
+		public String getValue(){
+			return value;
+		}
+	}
+	
 	public NaverBlog(){
 		super();
 	}
@@ -62,6 +75,7 @@ class NaverBlog extends NaverSearch{
 	}
 	
 	private ArrayList<Map<String, String>> _getData(String xmlData){
+		int success = 0, fail = 0;
 		if(xmlData == null || xmlData.length() < 1)
 			return null;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String,String>>();
@@ -70,9 +84,20 @@ class NaverBlog extends NaverSearch{
 		Elements elements = doc.getElementsByTag("item");
 		
 		for(Element e : elements){
-			String blogContent = _getBlogContent(_getLink(e.toString()));
-			if(blogContent == null)
+			String link;
+			try{
+				link = _getLink(e.toString());
+			}catch (StringIndexOutOfBoundsException exception){
+				System.out.println(exception);
 				continue;
+			}
+//			String blogContent = _getBlogContent(_getLink(e.toString()));
+			String blogContent = _getBlogContent(link);
+			if(blogContent == null){
+				fail++;
+				continue;
+			}
+			success++;
 			resultMap = new HashMap<String, String>();
 			resultMap.put("title", e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", ""));
 			resultMap.put("blogContent", blogContent);
@@ -81,6 +106,7 @@ class NaverBlog extends NaverSearch{
 			resultList.add(resultMap);
 		}
 		
+		System.out.printf("Success : %d, Fail : %d\n", success, fail);
 		if(resultList.size() > 0)
 			return resultList;
 		return null;
@@ -121,51 +147,9 @@ class NaverBlog extends NaverSearch{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NullPointerException e){
-			e.printStackTrace(); // If blog is not naver
-		}
-//		try {
-//			URL url = new URL(naverAPIUrl);
-//			URLConnection connection = url.openConnection();
-//			BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//			String content = "", tmp;
-//			while((tmp = br.readLine()) != null)
-//				content += tmp + "\n";
-//			Document doc = Jsoup.parse(content);
-//			Element element = doc.getElementById("mainFrame");
-//			String src;
-//			try{
-//				src = element.toString();
-//			}catch(NullPointerException e){
-//				return null;
-//			}
-//			int start, end;
-//			src = src.replace("&amp;", "&");
-//			start = src.indexOf("src=") + 5;
-//			end = src.indexOf("&beginTime");
-//			src = src.substring(start, end);
-//			src = "http://blog.naver.com" + src;
-//			start = src.indexOf("logNo=") + 6;
-//			String logNum = src.substring(start);
-//			
-//			url = new URL(src);
-//			connection = url.openConnection();
-//			br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//			content = "";
-//			while((tmp = br.readLine()) != null)
-//				content += tmp + "\n";
-//			doc = Jsoup.parse(content);
-//			element = doc.getElementById("post-view" + logNum);
-//			System.out.println(element.text());
-//			return element.text();
-//			
-//		} catch (MalformedURLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
+			System.out.println("It is not naver blog.");
+//			e.printStackTrace(); // If blog is not naver
+		}		
 		return null;
 	}
 	
@@ -175,5 +159,24 @@ class NaverBlog extends NaverSearch{
 		end = item.indexOf("<description>");
 		item = item.substring(start+8, end);
 		return item;
+	}
+	
+	public static void main(String[] args) throws IOException {
+		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
+		ArrayList<Map<String, String>> result;
+		String keyword = "돈코보쌈";
+		
+		result = (ArrayList<Map<String, String>>) ns.getResult(keyword);
+		FileWriter fw = new FileWriter(new File("blogtest.txt"));
+		
+		fw.write(keyword + "\n\n");
+		for(Map<String, String> r : result){
+			fw.write(r.get(NaverBlog.FieldName.TITLE.getValue()) + "\n");
+			fw.write(r.get(NaverBlog.FieldName.BLOGGER_NAME.getValue()) + "\n");
+			fw.write(r.get(NaverBlog.FieldName.BLOGGER_LINK.getValue()) + "\n");
+			fw.write(r.get(NaverBlog.FieldName.BLOG_CONTENT.getValue()) + "\n\n\n\n\n");
+			fw.write("==================================================================================\n");
+		}
+		fw.close();
 	}
 }

@@ -58,7 +58,7 @@ public class NaverConnector extends Connector{
 			String tmp;
 			while((tmp = bufferedData.readLine()) != null)
 				xmlData += tmp;
-			if(xmlData.indexOf("error xmlns") != -1)
+			if(xmlData.equals("") || xmlData.indexOf("error xmlns") != -1)
 				return null;
 			return xmlData;
 		} catch (MalformedURLException e) {
