@@ -47,7 +47,7 @@ public class NaverConnector extends Connector{
 		String xmlData = "";
 		try {
 			// Initialize API URL.
-			 completeUrl = _BASE_URL + "&" + _getParam(keyword);
+			completeUrl = _BASE_URL + "&" + _getParam(keyword);
 			 
 			// Get XML data from naver search API.
 			URL url = new URL(completeUrl);
