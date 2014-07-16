@@ -11,10 +11,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -47,13 +47,10 @@ public class PosNagWordCounter extends TextMining{
 		return null;
 	}
 	
-	public Map<String, _Word> wordCount(List<String> list){
-//		FileWriter fw;
-//		try{
-//		fw = new FileWriter(new File("test1.txt"));
-//		}catch(Exception e){return null;}
+	public Map<String, Word> wordCount(List<String> list){		
+//		Map<String, Word> word = new HashMap<String, Word>();
+		Map<String, Word> word = new TreeMap<String, Word>(new _ValueComparator());
 		
-		Map<String, _Word> word = new HashMap<String, _Word>();
 		Tagger tagger = new Tagger("-d " + _dictionaryPath);
 		
 		for(int i = 0; i < list.size(); i++){
@@ -64,27 +61,18 @@ public class PosNagWordCounter extends TextMining{
 			
 			String rating = token[0];
 			String taggedWords = tagger.parse(token[1]); // comment의 형태소 분석
-//			try {
-//				fw.write("평점 : " + rating + "\n댓글 : " + token[1] + "\n");
-//				fw.write(taggedWords + "\n\n\n\n\n\n\n");
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+
 			token = taggedWords.split("\n");
 			for(String t : token){
 				if(t.matches(_wordClass)){ // 원하는 품사태그를 가진 단어를 처리
 					String[] tmp = t.split("\t");
 					if(!word.containsKey(tmp[0])){ // 기존에 카운트된 단어가 아니면 word Map에 입력
-						word.put(tmp[0], new _Word(tmp[0]));
+						word.put(tmp[0], new Word(tmp[0]));
 					}
 					word.get(tmp[0]).addCount(Integer.parseInt(rating)); // 워드 카운트를 1 올림
 				}
 			}
 		}
-//		_ValueComparator comp = new _ValueComparator(word);
-//		Map<String, _Word> result = new TreeMap<String, _Word>(comp);
-//		result.putAll(word);
 		return pickOutValidWords(word);
 	}
 	
@@ -93,18 +81,15 @@ public class PosNagWordCounter extends TextMining{
 	 * @param wordList
 	 * @return
 	 */
-	private Map<String, _Word> pickOutValidWords(Map<String, _Word> wordList){
+	private Map<String, Word> pickOutValidWords(Map<String, Word> wordList){
 		Set<String> keyset = new HashSet<String>();
 		for(String key : wordList.keySet()){
-			_Word word = wordList.get(key);
+			Word word = wordList.get(key);
 			
-//			if(word.totalCount / _Word.total >= 0.01){
-//				continue;
-//			}
 			if(!_isValidWord(word)){
-				keyset.add(key); continue;
+				keyset.add(key);
+				continue;
 			}
-			
 		}
 
 		for(String key : keyset)
@@ -141,16 +126,35 @@ public class PosNagWordCounter extends TextMining{
 		return getTextFromXml(ratingData, "utf-8");
 	}
 	
+	public List<String> getTextFromXml(File[] ratingData){
+		List<String> result = new ArrayList<String>();
+		for(int i = 0; i < ratingData.length; i++){
+			result.addAll(getTextFromXml(ratingData[i]));
+		}
+		return result;
+	}
+	
+	public File[] getFileArray(String[] path){
+		File[] result = new File[path.length];
+		for(int i = 0; i < path.length; i++){
+			result[i] = new File(path[i]);
+		}
+		return result;
+	}
+	
 	private class _ValueComparator implements Comparator<String> {
 
-	    Map<String, _Word> base;
-	    _ValueComparator(Map<String, _Word> base) {
-	        this.base = base;
-	    }
+//	    Map<String, Word> base;
+//	    _ValueComparator(Map<String, Word> base) {
+//	        this.base = base;
+//	    }
 
 	    // Note: this comparator imposes orderings that are inconsistent with equals.    
+//	    public int compare(String a, String b) {
+//	        return base.get(a).totalCount - base.get(b).totalCount;
+//	    }
 	    public int compare(String a, String b) {
-	        return base.get(a).totalCount - base.get(b).totalCount;
+	        return a.compareTo(b);
 	    }
 	}
 	
@@ -159,12 +163,13 @@ public class PosNagWordCounter extends TextMining{
 	 * @author taeyong
 	 *
 	 */
-	private static class _Word{
+	public static class Word{
 		static int total = 0;
-		int wordScore;
+//		int wordScore;
+		double wordScore;
 		String word;
 		int goodCommentCount, badCommentCount, normalCommentCount, totalCount;
-		_Word(String word){
+		Word(String word){
 			this.word = word;
 			totalCount = goodCommentCount = normalCommentCount = badCommentCount = 0;
 			total++;
@@ -173,9 +178,9 @@ public class PosNagWordCounter extends TextMining{
 		void addCount(int rating){
 			totalCount++;
 			switch(rating){
-			case 1:	case 2:	case 3:	case 4: case 5:
+			case 1:	case 2:	case 3:	case 4: case 5 : case 6:
 				badCommentCount++; break;
-			case 6: case 7: case 8:
+			case 7: case 8:
 				normalCommentCount++; break;
 			case 9:	case 10:
 				goodCommentCount++; break;
@@ -183,49 +188,57 @@ public class PosNagWordCounter extends TextMining{
 		}
 	}
 	
-	private boolean _isValidWord(_Word word){
+	private boolean _isValidWord(Word word){
 		double goodRate = 0.0, badRate = 0.0;
 		int diff = word.goodCommentCount - word.badCommentCount;
+		// goodComment와 badComment의 비율이 2배이상 차이 날때 유효 워드로 인정
+		if((double)word.totalCount / Word.total < 0.001)
+			return false;
 		if(diff > 0 && ((double)word.badCommentCount / word.goodCommentCount) <= 0.5){
-			goodRate = ((double)word.goodCommentCount + word.badCommentCount) / word.totalCount;
+			// 현재 word에서 goodComment의 비율을 구함
+			goodRate = (double)word.goodCommentCount/ (word.totalCount - word.normalCommentCount);
+			// goodComment의 비율에 전체 word카운트에서 현재 word의 비율을 구해서 더해줌
+			goodRate += (double)word.totalCount / Word.total;
 		}
 		else if(diff < 0 && ((double)word.goodCommentCount / word.badCommentCount) <= 0.5){
-			badRate = ((double)word.goodCommentCount + word.badCommentCount) / word.totalCount;
+			badRate = (double)word.badCommentCount / (word.totalCount - word.normalCommentCount);
+			badRate += (double)word.totalCount / Word.total;
 		}
 		else{
 			return false;
 		}
 		
-		if(goodRate < 0.5 && badRate < 0.5){
+		if(goodRate <= 0.5 && badRate <= 0.5){
 			return false;
 		}
 		
+		// 양수 점수 == goodComment
+		// 음수 점수 == badComment
 		if(goodRate > 0.0)
-			word.wordScore = (int) (goodRate * 10);
+			word.wordScore = goodRate * 10 - 5;
 		else
-			word.wordScore = 10 - (int) (badRate * 10);
+			word.wordScore = (badRate * 10) * -1 + 5;
 			
 		
 		return true;
 	}
-//	
-//	private int _getWordScore(int rate){
-//		if(rate > 0.9)
-//			return 10;
-//		else if(rate > 0.8)
-//			return 9;
-//	}
 	
 	public static void main(String[] args) throws IOException {
-		FileWriter fw = new FileWriter(new File("test2.txt"));
+		FileWriter fw = new FileWriter(new File("/Volumes/Macintosh HD/Users/taeyong/Desktop/test1.txt"));
 		PosNagWordCounter counter = new PosNagWordCounter();
-		List<String> list = counter.getTextFromXml(new File("haeundae_opinion.xml"));
-		Map<String, _Word> result = counter.wordCount(list);
-		fw.write("total : " + _Word.total + "\n");
-		fw.write(String.format("%-10s%-15s%-15s%-15s%-15s%-15s\n", "Words", "total","GoodComment", "NormalComment", "BadComment", "WordScore"));
-		for(String key : result.keySet()){
-			_Word word = result.get(key);
-			String tmp = String.format("%-10s\t%-15d\t%-15d\t%-15d\t%-15d\t%-15d\n", word.word, word.totalCount, word.goodCommentCount, word.normalCommentCount, word.badCommentCount, word.wordScore);
+//		String[] path = {"haeundae_opinion.xml", "thirst_opinion.xml"};
+		String[] path = {"/Volumes/Macintosh HD/Users/taeyong/Desktop/진영_음식점.xml"};
+//		File files = new File("/Volumes/Macintosh HD/Users/taeyong/Desktop/rating.xml");
+		File[] files = counter.getFileArray(path);
+		List<String> list = counter.getTextFromXml(files);
+		Map<String, Word> result = counter.wordCount(list);
+		fw.write("total : " + Word.total + "\n");
+		fw.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Words", "total","GoodComment", "NormalComment", "BadComment", "WordScore"));
+//		for(String key : result.keySet()){
+		for(Entry e : result.entrySet()){
+//			Word word = result.get(key);
+			Word word = (Word) e.getValue();
+			String tmp = String.format("%s\t%d\t%d\t%d\t%d\t%.5f\n", word.word, word.totalCount, word.goodCommentCount, word.normalCommentCount, word.badCommentCount, word.wordScore);
 			fw.write(tmp);
 		}
 		fw.close();

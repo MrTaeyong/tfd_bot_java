@@ -78,7 +78,8 @@ public class TFDDBController extends DBController{
 	}
 	
 //	private final String _BASE_URL = "jdbc:mysql://203.253.23.40/tfd";
-	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
+//	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
+	private final String _BASE_URL = "jdbc:mysql://203.253.23.46/tfd";
 	
 	public static final String PLACE_FIELD_NAME = "name";
 	public static final String PLACE_FIELD_CATE = "category";

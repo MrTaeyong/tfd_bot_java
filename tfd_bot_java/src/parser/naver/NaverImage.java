@@ -22,7 +22,7 @@ public class NaverImage extends NaverSearch {
 	@Override
 	public Object getResult(String keyword) {
 		// TODO Auto-generated method stub
-		int start = 1, display = 5;
+		int start = 1, display = 1;
 		NaverConnector connector;
 		String xmlData;
 		ArrayList<Map<String, String>> resultList = null;

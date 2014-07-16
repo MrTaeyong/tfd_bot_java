@@ -31,15 +31,16 @@ public class LocalImageParser {
 			String id = (String) e.getKey();
 			String name = (String) e.getValue();
 			searchResult = (ArrayList<Map<String, String>>) ns.getResult(name);
+			try{
 			for(Map<String, String> nr : searchResult){
-//				nr.put("place_id", id);
-				Map<String, String> temp = new HashMap<String, String>();
-				temp.put("place_id", id);
-				temp.put("link", nr.get("link"));
-				insertQueryList.add(temp);
+				nr.put("place_id", id);
+				insertQueryList.add(nr);
 			}
-//			controller.insertData("place_image_test", searchResult);
+			}catch(NullPointerException exception){
+				continue;
+			}
 			controller.insertData("place_image_test", insertQueryList);
+			insertQueryList.clear();
 		}
 	}
 }

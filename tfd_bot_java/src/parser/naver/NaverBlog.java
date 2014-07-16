@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jsoup.Jsoup;
@@ -49,7 +50,7 @@ class NaverBlog extends NaverSearch{
 		int start = 1, display = 100;
 		NaverConnector connector;
 		String xmlData;
-		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_BLOG);
 		
@@ -59,6 +60,7 @@ class NaverBlog extends NaverSearch{
 			if(xmlData == null)
 				break;
 			resultList.addAll(_getData(xmlData));
+//			break;
 			start += 100;
 			if(start == 901)
 				display = 99; // 901~999
@@ -73,6 +75,36 @@ class NaverBlog extends NaverSearch{
 			return resultList;
 		return null;
 	}
+	
+//	public Object getResult(String keyword, int start, int end) {
+//		NaverConnector connector = (NaverConnector) NaverConnector.getInstance(NaverConnector.NAVER_BLOG);
+//		String xmlData;
+//		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
+//		
+//		int remained = end % 100;
+//		int quotient = end / 100;
+//		int display;
+//		
+//		if(quotient == 0)
+//			display = remained;
+//		else
+//			display = 100;
+//		
+//		while(true){
+//			xmlData = (String) connector.connect(keyword, start, display);
+//			resultList.addAll(_getData(xmlData));
+//			if(quotient <= 0)
+//				break;
+//			start += 100;
+//			if(--quotient == 0)
+//				display = remained;
+//			else
+//				display = 100;
+//		}
+//		if(resultList.size() > 0)
+//			return resultList;
+//		return null;
+//	}
 	
 	private ArrayList<Map<String, String>> _getData(String xmlData){
 		int success = 0, fail = 0;
