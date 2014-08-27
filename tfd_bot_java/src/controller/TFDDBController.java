@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import util.StringUtil;
@@ -79,7 +80,7 @@ public class TFDDBController extends DBController{
 	
 //	private final String _BASE_URL = "jdbc:mysql://203.253.23.40/tfd";
 //	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
-	private final String _BASE_URL = "jdbc:mysql://203.253.23.46/tfd";
+	private final String _BASE_URL = "jdbc:mysql://220.70.0.4/tfd";
 	
 	public static final String PLACE_FIELD_NAME = "name";
 	public static final String PLACE_FIELD_CATE = "category";
@@ -95,8 +96,8 @@ public class TFDDBController extends DBController{
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			con = DriverManager.getConnection(baseUrl, id, passwd);
-			System.out.println("DBms connection success");
-			System.out.println("DB load success");
+//			System.out.println("DBms connection success");
+//			System.out.println("DB load success");
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -113,32 +114,49 @@ public class TFDDBController extends DBController{
 		return con;
 		
 	}
-	public Map<String, String> getData(String query){
+	
+	public List<Map<String, String>> getData(String query){
+		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+		String[] fields;
 		Connection con = null;
-		Map<String, String> result = new HashMap<String, String>();
-		try {
-			con = getConnection(_BASE_URL, "dbmaster", "tfd1234");
-			
-			Statement stmt = null;
-			ResultSet rs = null;
-			stmt = con.createStatement();
-			rs = stmt.executeQuery(query);
-
-			while(rs.next()){
-				int id = rs.getInt(Place.ID.value());
-				String link = rs.getString(Place.NAME.value());				
-				result.put(String.valueOf(id), link);
-				System.out.println(id +", "+ link);
-			}
-			
-			return result;
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		try{
+			fields = query.substring(query.indexOf("select") + 7, query.indexOf("from")).split(",");
+		} catch (Exception e){
+			return null;
 		}
 		
-		return null;
+		try{
+			con = DriverManager.getConnection(_BASE_URL, "tfd", "tfd1234");
+			
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(query);
+			
+			while(rs.next()){
+				Map<String, String> record = new HashMap<String, String>();
+				for(String field : fields){
+					String temp = field.trim();
+					record.put(temp, rs.getString(temp));
+				}
+				result.add(record);
+			}
+			if(result.size() > 0)
+				return result;
+			return null;
+		} catch (Exception exception){
+			return null;
+		} finally {
+			try {
+				con.close();
+				stmt.close();
+				rs.close();
+			} catch (SQLException e) {}
+			catch (NullPointerException e){}
+		}
 	}
+
 	/**
 	 * 
 	 * @method Name : insertData
@@ -151,12 +169,13 @@ public class TFDDBController extends DBController{
 	 */
 	public void insertData(String tableName, ArrayList<Map<String, String>> insertDatas) {
 		Connection con = null;
+		PreparedStatement preparedStmt = null;
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			con = DriverManager.getConnection(_BASE_URL, "dbmaster", "tfd1234");
-			System.out.println("DBms connection success");
-			System.out.println("DB load success");
+			con = DriverManager.getConnection(_BASE_URL, "tfd", "tfd1234");
+//			System.out.println("DBms connection success");
+//			System.out.println("DB load success");
 			
 			// create query string.
 			String test1 = String.format("insert into %s ", tableName);
@@ -170,33 +189,46 @@ public class TFDDBController extends DBController{
 			String queryFormat = " insert into " + tableName + columns
 					+ " values" + values;
 			// create the mysql insert preparedstatement
-			PreparedStatement preparedStmt = con.prepareStatement(queryFormat);
+			preparedStmt = con.prepareStatement(queryFormat);
 			ArrayList<String> keySequence = new ArrayList<String>(insertData.keySet());
 			for(Map<String, String> data : insertDatas){
 				for(int i = 0; i < keySequence.size(); i++)
 					preparedStmt.setString(i+1, data.get(keySequence.get(i)));
-//				preparedStmt.setString(1, data.get(TFDDBController.Place.NAME.value()));
-//				preparedStmt.setString(2, data.get(TFDDBController.Place.CATEGORY.value()));
-//				preparedStmt.setString(4, data.get(TFDDBController.Place.ADDRESS.value()));
-//				preparedStmt.setString(3, data.get(TFDDBController.Place.TELEPHONE.value()));
-//				preparedStmt.setString(5, data.get(TFDDBController.Place.URL.value()));
-//				preparedStmt.setString(6, data.get(TFDDBController.Place.DESC.value()));
-//				preparedStmt.setFloat(7, Float.valueOf(data.get(TFDDBController.Place.POINT_X.value())));
-//				preparedStmt.setFloat(8, Float.valueOf(data.get(TFDDBController.Place.POINT_Y.value())));
 
 				// execute the preparedstatement
-				preparedStmt.execute();
+				try{
+					preparedStmt.execute();
+				} catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException exception){}
 			}
 
-			con.close();
-			System.out.println("데이터 Insert 완료.");
-			System.out.println("DB 접속 종료.");
+//			System.out.println("데이터 Insert 완료.");
+//			System.out.println("DB 접속 종료.");
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				con.close();
+				preparedStmt.close();
+			} catch (SQLException e) {}
 		}
-
 	}
+	
+	public void queryExecute(String query) {
+		Connection con = null;
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			con = DriverManager.getConnection(_BASE_URL, "tfd", "tfd1234");
+			
+			con.prepareStatement(query).execute();
+			con.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public static String generateColumn(Map<String, String> data){
 		String delim = ",";
 		return "(" + StringUtil.join(new ArrayList<String>(data.keySet()), delim) + ")";

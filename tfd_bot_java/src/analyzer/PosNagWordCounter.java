@@ -6,23 +6,30 @@
  */
 package analyzer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.chasen.mecab.Node;
 import org.chasen.mecab.Tagger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import controller.LocalDBController;
 
 /**
  * @Class	: PosNagWordCounter
@@ -31,27 +38,29 @@ import org.jsoup.select.Elements;
  */
 public class PosNagWordCounter extends TextMining{
 	// 워드 카운드를 할 품사태그
-	private String _wordClass = "(.*NNG.*|.*NNP.*|.*NNB.*|.*NR.*|.*NP.*|.*VV.*|.*VA.*|.*VX.*|.*MAG.*|.*XR.*)";
+//	private String _wordClass = "(.*NNG.*|.*NNP.*|.*NNB.*|.*NR.*|.*NP.*|.*VV.*|.*VA.*|.*MAG.*|.*XR.*)";
+	private String _wordClass = "(.*VA.*|.*MAG.*|.*XR.*)";
 	// 은전한닢 형태소 분석기의 사전 경로
 	private String _dictionaryPath = "/usr/local/lib/mecab/dic/mecab-ko-dic";
+	private Tagger tagger = new Tagger("-d" + _dictionaryPath);
 	
 	@Override
 	Map<String, Integer> wordCount(String text) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	Map<String, Integer> wordCount(ArrayList<String> list) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
+	/**
+	 * @description	평점 + "\t" + 댓글 형태의 문자열 리스트에서 단어의 갯수를 셈 
+	 * @param list 평점 + "\t" + 댓글 형태 문자열의 리스트
+	 * @return 전체 리스트에서 동일한 단어가 등장한 횟수를 단어와 횟수를 묶어 반환
+	 */
 	public Map<String, Word> wordCount(List<String> list){		
-//		Map<String, Word> word = new HashMap<String, Word>();
 		Map<String, Word> word = new TreeMap<String, Word>(new _ValueComparator());
-		
-		Tagger tagger = new Tagger("-d " + _dictionaryPath);
 		
 		for(int i = 0; i < list.size(); i++){
 			String text = list.get(i);
@@ -66,10 +75,11 @@ public class PosNagWordCounter extends TextMining{
 			for(String t : token){
 				if(t.matches(_wordClass)){ // 원하는 품사태그를 가진 단어를 처리
 					String[] tmp = t.split("\t");
-					if(!word.containsKey(tmp[0])){ // 기존에 카운트된 단어가 아니면 word Map에 입력
-						word.put(tmp[0], new Word(tmp[0]));
+					String key = tmp[0] + "\t" + tmp[1];
+					if(!word.containsKey(key)){ // 기존에 카운트된 단어가 아니면 word Map에 입력
+						word.put(key, new Word(key));
 					}
-					word.get(tmp[0]).addCount(Integer.parseInt(rating)); // 워드 카운트를 1 올림
+					word.get(key).addCount(Integer.parseInt(rating)); // 워드 카운트를 1 올림
 				}
 			}
 		}
@@ -77,9 +87,33 @@ public class PosNagWordCounter extends TextMining{
 	}
 	
 	/**
-	 * @discription 유효한 워드를 걸러내는 메서드
-	 * @param wordList
-	 * @return
+	 * @description 댓글에 존재하는 모든 단어를 추출
+	 * @param list 평점 + "\t" + 댓글 형태 문자열의 리스
+	 * @return 중복되지 않는 단어 셋
+	 */
+	public Set<String> getWordOfRatedComments(List<String> list){
+		Set<String> result = new HashSet<String>();
+		
+		for(int i = 0; i < list.size(); i++){
+			String text = list.get(i);
+			String[] token = text.split("\t");
+			String taggedWords = tagger.parse(token[1]);
+			
+			token = taggedWords.split("\n");
+			for(String t : token){
+				if(t.matches(_wordClass)){
+					result.add(t);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * 유효한 워드를 걸러내는 메서드
+	 * @param wordList 단어와 단어가 긍정, 부정, 중립 글에서 출현한 횟수의 묶음 리스트
+	 * @return 단어 출현 비도에 따른 계산식에 의해 걸러진 단어 리스트
 	 */
 	private Map<String, Word> pickOutValidWords(Map<String, Word> wordList){
 		Set<String> keyset = new HashSet<String>();
@@ -98,96 +132,6 @@ public class PosNagWordCounter extends TextMining{
 		return wordList;
 	}
 	
-	/**
-	 * @discription xml형태로 된 comment list를 "rating \t comment 형태의 리스트로 변경/리턴
-	 * @param ratingData
-	 * @param encoding
-	 * @return
-	 */
-	public List<String> getTextFromXml(File ratingData, String encoding){
-		List<String> result = new ArrayList<String>();
-		try {
-			Document doc = Jsoup.parse(ratingData, encoding);
-			Elements elements = doc.getElementsByTag("opinion");
-			for(Element e : elements){
-				String rating = e.getElementsByTag("rating").text();
-				String comment = e.getElementsByTag("comment").text();
-				result.add(rating + "\t" + comment);
-			}
-			return result;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	public List<String> getTextFromXml(File ratingData){
-		return getTextFromXml(ratingData, "utf-8");
-	}
-	
-	public List<String> getTextFromXml(File[] ratingData){
-		List<String> result = new ArrayList<String>();
-		for(int i = 0; i < ratingData.length; i++){
-			result.addAll(getTextFromXml(ratingData[i]));
-		}
-		return result;
-	}
-	
-	public File[] getFileArray(String[] path){
-		File[] result = new File[path.length];
-		for(int i = 0; i < path.length; i++){
-			result[i] = new File(path[i]);
-		}
-		return result;
-	}
-	
-	private class _ValueComparator implements Comparator<String> {
-
-//	    Map<String, Word> base;
-//	    _ValueComparator(Map<String, Word> base) {
-//	        this.base = base;
-//	    }
-
-	    // Note: this comparator imposes orderings that are inconsistent with equals.    
-//	    public int compare(String a, String b) {
-//	        return base.get(a).totalCount - base.get(b).totalCount;
-//	    }
-	    public int compare(String a, String b) {
-	        return a.compareTo(b);
-	    }
-	}
-	
-	/**
-	 * @discription 워드카운트를 가지는 클래스
-	 * @author taeyong
-	 *
-	 */
-	public static class Word{
-		static int total = 0;
-//		int wordScore;
-		double wordScore;
-		String word;
-		int goodCommentCount, badCommentCount, normalCommentCount, totalCount;
-		Word(String word){
-			this.word = word;
-			totalCount = goodCommentCount = normalCommentCount = badCommentCount = 0;
-			total++;
-		}
-		
-		void addCount(int rating){
-			totalCount++;
-			switch(rating){
-			case 1:	case 2:	case 3:	case 4: case 5 : case 6:
-				badCommentCount++; break;
-			case 7: case 8:
-				normalCommentCount++; break;
-			case 9:	case 10:
-				goodCommentCount++; break;
-			}
-		}
-	}
-	
 	private boolean _isValidWord(Word word){
 		double goodRate = 0.0, badRate = 0.0;
 		int diff = word.goodCommentCount - word.badCommentCount;
@@ -202,7 +146,7 @@ public class PosNagWordCounter extends TextMining{
 		}
 		else if(diff < 0 && ((double)word.goodCommentCount / word.badCommentCount) <= 0.5){
 			badRate = (double)word.badCommentCount / (word.totalCount - word.normalCommentCount);
-			badRate += (double)word.totalCount / Word.total;
+			badRate -= (double)word.totalCount / Word.total;
 		}
 		else{
 			return false;
@@ -219,28 +163,236 @@ public class PosNagWordCounter extends TextMining{
 		else
 			word.wordScore = (badRate * 10) * -1 + 5;
 			
-		
 		return true;
 	}
 	
-	public static void main(String[] args) throws IOException {
-		FileWriter fw = new FileWriter(new File("/Volumes/Macintosh HD/Users/taeyong/Desktop/test1.txt"));
-		PosNagWordCounter counter = new PosNagWordCounter();
-//		String[] path = {"haeundae_opinion.xml", "thirst_opinion.xml"};
-		String[] path = {"/Volumes/Macintosh HD/Users/taeyong/Desktop/진영_음식점.xml"};
-//		File files = new File("/Volumes/Macintosh HD/Users/taeyong/Desktop/rating.xml");
-		File[] files = counter.getFileArray(path);
-		List<String> list = counter.getTextFromXml(files);
-		Map<String, Word> result = counter.wordCount(list);
-		fw.write("total : " + Word.total + "\n");
-		fw.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Words", "total","GoodComment", "NormalComment", "BadComment", "WordScore"));
-//		for(String key : result.keySet()){
-		for(Entry e : result.entrySet()){
-//			Word word = result.get(key);
-			Word word = (Word) e.getValue();
-			String tmp = String.format("%s\t%d\t%d\t%d\t%d\t%.5f\n", word.word, word.totalCount, word.goodCommentCount, word.normalCommentCount, word.badCommentCount, word.wordScore);
-			fw.write(tmp);
+	/**
+	 * DB로 부터 평점, 댓글을 가져와 문자열 리스트를 반환
+	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
+	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
+	 */
+	public List<String> getTextFromDB(LocalDBController dbcon){
+		List<String> result = new ArrayList<String>();
+		ResultSet queryResult = null;
+		queryResult = dbcon.getData("select rating, comment from external_comment");
+		try {
+			while(queryResult.next())
+				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
+		
+		if(result.size() > 0)
+			return result;
+		return null;
+	}
+	
+	/**
+	 * DB로 부터 평점, 댓글을 긍정 부정의 갯수를 맞춰 가져와 문자열 리스트를 반환
+	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
+	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
+	 */
+	public List<String> getBalancedTextFromDB(LocalDBController dbcon){
+		// DB에 있는 댓글에서 호의적 댓글과 부정정 댓글의 갯수를 맞추어서 추출
+		List<String> result = new ArrayList<String>();
+		int size = 0;
+		ResultSet queryResult = null;
+		queryResult = dbcon.getData("select rating, comment from external_comment where rating < 4");
+		try{
+			while(queryResult.next())
+				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
+			queryResult.last();
+			size = queryResult.getRow();
+			System.out.println("bad : " + size);
+		} catch (SQLException e) {
+			
+		}
+		queryResult = dbcon.getData("select rating, comment from external_comment where rating > 7 limit " + size);
+		try{
+			while(queryResult.next())
+				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
+			queryResult.last();
+			size = queryResult.getRow();
+			System.out.println("good : " + size);
+		} catch (SQLException e) {}
+		
+		if(result.size() > 0)
+			return result;
+		return null;
+	}
+	
+	/**
+	 * xml형태로 된 comment list를 "rating \t comment 형태의 리스트로 변경/리턴
+	 * @param ratingData
+	 * @param encoding
+	 * @return
+	 */
+	public List<String> getTextFromXml(File ratingData, String encoding){
+		List<String> result = new ArrayList<String>();
+		try {
+			Document doc = Jsoup.parse(ratingData, encoding);
+			Elements elements = doc.getElementsByTag("opinion");
+			for(Element e : elements){
+				String rating = e.getElementsByTag("rating").text();
+				String comment = e.getElementsByTag("comment").text();
+				result.add(rating + "\t" + comment);
+			}
+			return result;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public List<String> getTextFromXml(File ratingData){
+		return getTextFromXml(ratingData, "utf-8");
+	}
+	
+	public List<String> getTextFromXml(File[] ratingData){
+		List<String> result = new ArrayList<String>();
+		for(int i = 0; i < ratingData.length; i++)
+			result.addAll(getTextFromXml(ratingData[i]));
+		return result;
+	}
+	
+	public List<String> getTextFromXml(File[] ratingData, String encoding){
+		List<String> result = new ArrayList<String>();
+		for(int i = 0; i < ratingData.length; i++)
+			result.addAll(getTextFromXml(ratingData[i], encoding));
+		return result;
+	}
+	
+	public File[] getFileArray(String[] path){
+		File[] result = new File[path.length];
+		for(int i = 0; i < path.length; i++){
+			result[i] = new File(path[i]);
+		}
+		return result;
+	}
+	
+	private class _ValueComparator implements Comparator<String> {
+	    public int compare(String a, String b) {
+	        return a.compareTo(b);
+	    }
+	}
+	
+	/**
+	 * 워드카운트를 가지는 클래스
+	 * @author taeyong
+	 *
+	 */
+	public static class Word{
+		static int total = 0;
+		double wordScore;
+		String word, wordClass, originalContent;
+		int goodCommentCount, badCommentCount, normalCommentCount, totalCount;
+		Word(String originalContent, String word){
+			this(word);
+			this.originalContent = originalContent;
+		}
+		
+		Word(String word){
+			this.word = word;
+			totalCount = goodCommentCount = normalCommentCount = badCommentCount = 0;
+			total++;
+		}
+		
+		void addCount(int rating){
+			totalCount++;
+			switch(rating){
+			case 1:	case 2:	case 3:
+				badCommentCount++; break;
+			case 4: case 5 : case 6: case 7: 
+				normalCommentCount++; break;
+			case 8: case 9:	case 10:
+				goodCommentCount++; break;
+			}
+		}
+	}
+	
+	/**
+	 * 긴 문장에서 출현한 단어들을 단어에 품사태깅하여 반환 
+	 * @param sentenceList 문장 리스트
+	 * @return 중복되진 않는 단어 셋
+	 */
+	public Set<String> getWordOfSentences(List<String> sentenceList){
+		Set<String> result = new HashSet<String>();
+		for(int i = sentenceList.size() - 1; i >= 0; i--){
+			if(sentenceList.get(i) == null)
+				continue;
+			String sentence = WordAnalyzePreProcessor.removeConsonantAndVowel(sentenceList.get(i));
+			Node taggedWords = tagger.parseToNode(sentence);
+			for(; taggedWords != null; taggedWords = taggedWords.getNext()){
+				if(taggedWords.getFeature().matches(_wordClass)){
+					String word = taggedWords.getSurface() + "\t" + taggedWords.getFeature();
+					result.add(word);
+				}
+			}
+			sentenceList.remove(i);
+		}
+		
+		if(result.size() > 0)
+			return result;
+		return null;
+	}
+	
+	public List<String> getSentenceFromFile(File file) throws FileNotFoundException{
+		List<String> result = new ArrayList<String>();
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String sentence;
+		try {
+			while((sentence = br.readLine()) != null){
+				br.readLine();
+				sentence = br.readLine();
+				result.add(sentence);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {}
+		}
+		
+		if(result.size() > 0)
+			return result;
+		return null;
+	}
+	
+	public static void main(String[] args) throws IOException {
+		FileWriter fw = new FileWriter(new File("/Users/taeyong/Desktop/cafe.txt"));
+		PosNagWordCounter counter = new PosNagWordCounter();
+		
+		// xml을 통해 평점 계산방법
+//		String[] path = {"haeundae_opinion.xml", "thirst_opinion.xml"};
+//		String[] path = {"/Users/taeyong/Desktop/진영_음식점.xml"};
+//		File files = new File("/Volumes/Macintosh HD/Users/taeyong/Desktop/rating.xml");
+//		File[] files = counter.getFileArray(path);
+//		List<String> list = counter.getTextFromXml(files, "euc-kr");
+		
+		// DB를 통해 평점 계산방법
+//		List<String> list = counter.getTextFromDB(new LocalDBController());
+//		List<String> list = counter.getBalancedTextFromDB(new LocalDBController());
+		
+//		Map<String, Word> result = counter.wordCount(list);
+//		fw.write("total : " + Word.total + "\n");
+//		fw.write(String.format("%s\t%s\t%s\t%s\t%s\t%s\n", "Words", "total","GoodComment", "NormalComment", "BadComment", "WordScore"));
+//		for(Entry e : result.entrySet()){
+//			Word word = (Word) e.getValue();
+//			String tmp = String.format("%s\t%d\t%d\t%d\t%d\t%.5f\n", word.word, word.totalCount, word.goodCommentCount, word.normalCommentCount, word.badCommentCount, word.wordScore);
+//			fw.write(tmp);
+//		}
+//		fw.close();
+		
+//		Set<String> result = counter.getWord(list);
+//		for(String s : result){
+//			fw.write(s + "\n");
+//		}
+//		fw.close();
+		
+		Set<String> result = counter.getWordOfSentences(counter.getSentenceFromFile(new File("/Users/taeyong/Desktop/blogTest3.txt")));
+		for(String word : result)
+			fw.write(word + "\n");
 		fw.close();
 	}
 }

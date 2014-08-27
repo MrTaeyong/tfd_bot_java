@@ -15,6 +15,10 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import parser.Connector;
 
 /**
@@ -27,7 +31,6 @@ public class NaverConnector extends Connector{
 	final private String _BASE_URL;
 	private static int _start;
 	private static int _display;
-//	private static boolean _isMaximum;
 	
 	public NaverConnector(int type){
 		Map<Integer, String> target = new HashMap<Integer, String>();
@@ -37,7 +40,6 @@ public class NaverConnector extends Connector{
 		_BASE_URL = "http://openapi.naver.com/search?target=" + target.get(type);
 		_start = 1;
 		_display = 100;
-//		_isMaximum = true;
 	}
 	
 	@Override
@@ -60,6 +62,17 @@ public class NaverConnector extends Connector{
 				xmlData += tmp;
 			if(xmlData.equals("") || xmlData.indexOf("error xmlns") != -1)
 				return null;
+			
+			// Check range of contents
+			Document doc = Jsoup.parse(xmlData);
+			Elements elements = doc.getElementsByTag("total");
+			try{
+				if(Integer.parseInt(elements.get(0).text()) < _start)
+					return null;
+			} catch(Exception exception){
+				return null;
+			}
+			
 			return xmlData;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -88,6 +101,5 @@ public class NaverConnector extends Connector{
 	public void setRange(int start, int display){
 		this._start = start;
 		this._display = display;
-//		this._isMaximum = false;
 	}
 }

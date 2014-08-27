@@ -8,15 +8,17 @@ package parser.naver;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -24,6 +26,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
+import controller.DBController;
 
 /**
  * @Class	: NaverBlog
@@ -31,14 +34,23 @@ import parser.Connector;
  * @Author	: Taeyong
  */
 class NaverBlog extends NaverSearch{
+	private static final DBController _dbcon = DBController.newInstance(DBController.Type.TFD);
 	public static enum FieldName {
-		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"), BLOGGER_LINK("bloggerLink");
+		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"), BLOGGER_LINK("bloggerLink"), BLOGG_DATE("date");
 		String value;
 		FieldName(String value){
 			this.value = value;
 		}
 		public String getValue(){
 			return value;
+		}
+	}
+	
+	public static enum CategoryName {
+		CAFFE("카페"), RESTAURANT("음식점");
+		String value;
+		CategoryName(String value){
+			this.value = value;
 		}
 	}
 	
@@ -59,8 +71,10 @@ class NaverBlog extends NaverSearch{
 			xmlData = (String)connector.connect(keyword, start, display);
 			if(xmlData == null)
 				break;
-			resultList.addAll(_getData(xmlData));
-//			break;
+			List<Map<String, String>> tempResult = _getData(xmlData);
+			if(tempResult == null)
+				break;
+			resultList.addAll(tempResult);
 			start += 100;
 			if(start == 901)
 				display = 99; // 901~999
@@ -68,6 +82,8 @@ class NaverBlog extends NaverSearch{
 	            start = 1000;
 	            display = 100; // 1000~1099
 			}
+			else if(start >= 1100)
+				break;
 		}
 		
 		// Return result list.
@@ -75,37 +91,7 @@ class NaverBlog extends NaverSearch{
 			return resultList;
 		return null;
 	}
-	
-//	public Object getResult(String keyword, int start, int end) {
-//		NaverConnector connector = (NaverConnector) NaverConnector.getInstance(NaverConnector.NAVER_BLOG);
-//		String xmlData;
-//		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
-//		
-//		int remained = end % 100;
-//		int quotient = end / 100;
-//		int display;
-//		
-//		if(quotient == 0)
-//			display = remained;
-//		else
-//			display = 100;
-//		
-//		while(true){
-//			xmlData = (String) connector.connect(keyword, start, display);
-//			resultList.addAll(_getData(xmlData));
-//			if(quotient <= 0)
-//				break;
-//			start += 100;
-//			if(--quotient == 0)
-//				display = remained;
-//			else
-//				display = 100;
-//		}
-//		if(resultList.size() > 0)
-//			return resultList;
-//		return null;
-//	}
-	
+		
 	private ArrayList<Map<String, String>> _getData(String xmlData){
 		int success = 0, fail = 0;
 		if(xmlData == null || xmlData.length() < 1)
@@ -116,25 +102,34 @@ class NaverBlog extends NaverSearch{
 		Elements elements = doc.getElementsByTag("item");
 		
 		for(Element e : elements){
+			// 블로그 중복 검사
+			String title = e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", "");
+			String writer = e.getElementsByTag("bloggername").text();
+			List<Map<String, String>> duplicationCheck = _dbcon.getData("select title from blog_test where title=\"" + title + "\" and writer=\"" + writer + "\"");
+			if(duplicationCheck != null){
+				fail++;
+				continue;	// 중복되면 다음 블로그로..
+			}
+			
 			String link;
 			try{
 				link = _getLink(e.toString());
 			}catch (StringIndexOutOfBoundsException exception){
-				System.out.println(exception);
+				fail++;
 				continue;
 			}
-//			String blogContent = _getBlogContent(_getLink(e.toString()));
-			String blogContent = _getBlogContent(link);
-			if(blogContent == null){
+			
+			Map<String, String> dateAndContent = _getBlogContent(link);
+			if(dateAndContent == null){
 				fail++;
 				continue;
 			}
 			success++;
 			resultMap = new HashMap<String, String>();
-			resultMap.put("title", e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", ""));
-			resultMap.put("blogContent", blogContent);
-			resultMap.put("bloggerName", e.getElementsByTag("bloggername").text());
-			resultMap.put("bloggerLink", e.getElementsByTag("bloggerlink").text());
+			resultMap.putAll(dateAndContent); // Add blog content and date
+			resultMap.put("title", title); // Add title
+			resultMap.put("bloggerName", writer); // Add blogger name
+			resultMap.put("bloggerLink", e.getElementsByTag("bloggerlink").text()); // Add blog link
 			resultList.add(resultMap);
 		}
 		
@@ -144,24 +139,18 @@ class NaverBlog extends NaverSearch{
 		return null;
 	}
 	
-	private String _getBlogContent(String naverAPIUrl){
+	private Map<String, String> _getBlogContent(String naverAPIUrl){
 		Document doc;
-		Element element;
-		String content = "", tmp, src, logNo;
+		String src, logNo;
+		Map<String, String> result = new HashMap<String, String>();
 		int start, end;
 		
 		try {
 			// Jsoup의 커넥터를 이용하면 네이버API에서 주는 주소를 인식 못해 오류발생..
 			URL url = new URL(naverAPIUrl);
-			URLConnection connection = url.openConnection();
-			BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			
-			// Convert from BufferedReader to String
-			while((tmp = br.readLine()) != null)
-				content += tmp + "\n";
+			doc = Jsoup.parse(url, 5000);
 			
 			// Extracting the address contained in the mainFrame
-			doc = Jsoup.parse(content);
 			src = doc.getElementById("mainFrame").toString().replace("&amp;", "&");
 			start = src.indexOf("src=") + 5;
 			end = src.indexOf("&beginTime");
@@ -172,20 +161,23 @@ class NaverBlog extends NaverSearch{
 			
 			// URL의 커넥터를 사용하면 Jsoup에서 본문내용을 파싱하지 못함...
 			doc = Jsoup.connect(src).get();
-			element = doc.getElementById("post-view" + logNo);
-//			System.out.println(element.text());
-			return element.text();
+			result.put("date", doc.getElementsByClass("_postAddDate").text().trim().replaceAll("/", "-"));
+			result.put("blogContent", doc.getElementById("post-view" + logNo).text().trim());
+			
+			if(result.size() > 0)
+				return result;
+			return null;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NullPointerException e){
-			System.out.println("It is not naver blog.");
-//			e.printStackTrace(); // If blog is not naver
-		}		
+		} catch (NullPointerException e) {
+//			System.out.println("It is not naver blog.");
+		} catch (IndexOutOfBoundsException e) {
+//			System.out.println("Date is not exists");
+		}
 		return null;
 	}
 	
-	private String _getLink(String item){
+	private String _getLink(String item) throws StringIndexOutOfBoundsException {
 		int start, end;
 		start = item.indexOf("<link />");
 		end = item.indexOf("<description>");
@@ -193,22 +185,134 @@ class NaverBlog extends NaverSearch{
 		return item;
 	}
 	
-	public static void main(String[] args) throws IOException {
-		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
+	@SuppressWarnings("unchecked")
+	public void getAllPlaceOfCategory(CategoryName category){
+		Queue<String> jobQueue = new LinkedList<String>();
+		File jobFile = new File(category.value + ".txt");
+		NaverSearch naverBlogSearcher = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
 		ArrayList<Map<String, String>> result;
-		String keyword = "돈코보쌈";
 		
-		result = (ArrayList<Map<String, String>>) ns.getResult(keyword);
-		FileWriter fw = new FileWriter(new File("blogtest.txt"));
+		// 이미 진행중인 Job이 없으면 DB에서 리스트를 생성
+		if(!jobFile.exists())
+			_extractPlaceName(category);
 		
-		fw.write(keyword + "\n\n");
-		for(Map<String, String> r : result){
-			fw.write(r.get(NaverBlog.FieldName.TITLE.getValue()) + "\n");
-			fw.write(r.get(NaverBlog.FieldName.BLOGGER_NAME.getValue()) + "\n");
-			fw.write(r.get(NaverBlog.FieldName.BLOGGER_LINK.getValue()) + "\n");
-			fw.write(r.get(NaverBlog.FieldName.BLOG_CONTENT.getValue()) + "\n\n\n\n\n");
-			fw.write("==================================================================================\n");
+		// Job Queue에 작업을 채움
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(jobFile));
+			String jobString;
+			while((jobString = br.readLine()) != null)
+				jobQueue.offer(jobString);
+			br.close();
+		} catch (IOException e) {}
+		
+		while(!jobQueue.isEmpty()){
+			String[] placeNameAndLocal = jobQueue.peek().split("\t");
+			if(placeNameAndLocal.length < 2) { // 형식이 다를 때 다음 작업으로 넘어감
+				jobQueue.remove();
+				_saveRemainingJob(jobQueue, category);
+				continue;
+			}
+			
+			String placeName = placeNameAndLocal[0];
+			String local = placeNameAndLocal[1];
+			
+			System.out.println(placeName + " is being processed.");
+			
+			result = (ArrayList<Map<String, String>>) naverBlogSearcher.getResult(local + " " + placeName);
+			
+			if(result == null){
+				jobQueue.remove();
+				_saveRemainingJob(jobQueue, category);
+				continue;
+			}
+			
+			result = (ArrayList<Map<String, String>>) _filterBlog(result, placeName, local);
+			
+			for(Map<String, String> blogContent : result){					
+//				if(!_isValidBlog(blogContent.get(NaverBlog.FieldName.BLOG_CONTENT.value), placeName, local)){
+//					try {
+//						FileWriter fw = new FileWriter("log.txt", true);
+//						fw.write(placeName + "\n");
+//						fw.write(blogContent.get(NaverBlog.FieldName.BLOG_CONTENT.value) + "\n\n\n");
+//						fw.close();
+//					} catch (IOException e){}
+//					continue;
+//				}
+				ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
+				Map<String, String> temp = new HashMap<String, String>();
+				temp.put("place_name", placeName);
+				temp.put("title", blogContent.get(NaverBlog.FieldName.TITLE.value));
+				temp.put("writer", blogContent.get(NaverBlog.FieldName.BLOGGER_NAME.value));
+				temp.put("url", blogContent.get(NaverBlog.FieldName.BLOGGER_LINK.value));
+				temp.put("content", blogContent.get(NaverBlog.FieldName.BLOG_CONTENT.value));
+				temp.put("date", blogContent.get(NaverBlog.FieldName.BLOGG_DATE.value));
+				query.add(temp);
+				_dbcon.insertData("blog_test", query);
+			}
+			jobQueue.remove();
+			_saveRemainingJob(jobQueue, category);			
 		}
-		fw.close();
+	}
+	
+	private void _saveRemainingJob(Queue<String> jobQueue, CategoryName category){
+		try {
+			FileWriter fw = new FileWriter(category.value + ".txt");
+			for(Iterator<String> iter = jobQueue.iterator(); iter.hasNext();)
+				fw.write(iter.next() + "\n");
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Method for extracting place name and local related with category from DB to file.
+	 * @param category
+	 */
+	private void _extractPlaceName(CategoryName category){
+		List<Map<String, String>> nameAndCategoryOfPlace = _dbcon.getData("select name, local from place_info where category in (select sub_group from category where c_group='" + category.value + "')");
+		try {
+			FileWriter fw = new FileWriter(category.value + ".txt");
+			for(Map<String, String> record : nameAndCategoryOfPlace)
+				fw.write(record.get("name") + "\t" + record.get("local") + "\n");
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Method for Checking validity of blog content using confirm place name and local.
+	 * @param blogContent Sentence of blog
+	 * @param placeName Place name of blog content.
+	 * @param local Local of place of blog content.
+	 * @return Return boolean value about validity of blog
+	 */
+	private boolean _isValidBlog(String blogContent, String placeName, String local){
+		if(blogContent.indexOf(local) >= 0){
+			String[] placeNameToken = placeName.split(" ");
+			for(String token : placeNameToken){
+				if(blogContent.indexOf(token) >= 0)
+					return true;
+			}
+		}
+		return false;
+	}
+	
+	private List<Map<String, String>> _filterBlog(List<Map<String, String>> blogData, String placeName, String local){
+		List<Integer> indexOfDeletedData = new ArrayList<Integer>();
+		for(int i = 0; i < blogData.size(); i++){
+			String title = blogData.get(i).get("title");
+			if(!_isValidBlog(title, placeName, local))
+				indexOfDeletedData.add(i);
+		}
+		for(int i = 0; i < indexOfDeletedData.size(); i++)
+			blogData.remove(indexOfDeletedData.get(i));
+		return blogData;
+	}
+	
+	public static void main(String[] args) throws IOException {
+		NaverBlog nb = new NaverBlog();
+		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CAFFE);
 	}
 }

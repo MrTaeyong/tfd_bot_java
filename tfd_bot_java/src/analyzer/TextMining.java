@@ -19,6 +19,7 @@ abstract public class TextMining {
 	static {
 		System.load(System.getProperty("java.library.path") + "/libMeCab.so");
 //		System.loadLibrary("libMeCab.so");
+//		System.out.println(System.getProperty("java.library.path"));
 	}
 	
 	public static enum Type{
