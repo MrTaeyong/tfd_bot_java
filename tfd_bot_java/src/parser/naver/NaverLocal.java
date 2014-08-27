@@ -17,8 +17,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
-import util.CoordinatesConverter;
-import util.GeoPoint;
 import controller.DBController;
 
 /**
@@ -94,6 +92,7 @@ class NaverLocal extends NaverSearch{
 		return item;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException{
 		ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_LOCAL);

@@ -11,13 +11,9 @@ package parser.twitter;
  * @Date	: 2014. 06. 02.
  * @Author	: Taeyong
  */
-import java.util.ArrayList;
-import java.util.List;
-
 import parser.Connector;
 import twitter4j.Query;
 import twitter4j.QueryResult;
-import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -31,8 +27,7 @@ public class TwitterConnector extends Connector{
 	
 	@Override
 	public Object connect(String keyword) {
-		// TODO Auto-generated method stub
-		ArrayList<String> result = new ArrayList<String>();
+//		ArrayList<String> result = new ArrayList<String>();
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setOAuthConsumerKey(_OAUTH_CONSUMER_KEY);
 		cb.setOAuthConsumerSecret(_OAUTH_CONSUMER_SECRET);
@@ -47,7 +42,6 @@ public class TwitterConnector extends Connector{
 			queryResult = twitter.search(query);
 			return queryResult;
 		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;

@@ -12,8 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -29,7 +27,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import controller.LocalDBController;
+import controller.DBController;
 
 /**
  * @Class	: PosNagWordCounter
@@ -171,15 +169,13 @@ public class PosNagWordCounter extends TextMining{
 	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
 	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
 	 */
-	public List<String> getTextFromDB(LocalDBController dbcon){
+	public List<String> getTextFromDB(DBController dbcon){
 		List<String> result = new ArrayList<String>();
-		ResultSet queryResult = null;
+		List<Map<String, String>> queryResult = null;
 		queryResult = dbcon.getData("select rating, comment from external_comment");
-		try {
-			while(queryResult.next())
-				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
-		} catch (SQLException e) {
-			e.printStackTrace();
+		for(int i = queryResult.size() - 1; i >= 0; i--){
+			result.add(queryResult.get(i).get("rating") + "\t" + queryResult.get(i).get("comment"));
+			queryResult.remove(i);
 		}
 		
 		if(result.size() > 0)
@@ -192,29 +188,27 @@ public class PosNagWordCounter extends TextMining{
 	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
 	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
 	 */
-	public List<String> getBalancedTextFromDB(LocalDBController dbcon){
+	public List<String> getBalancedTextFromDB(DBController dbcon){
 		// DB에 있는 댓글에서 호의적 댓글과 부정정 댓글의 갯수를 맞추어서 추출
 		List<String> result = new ArrayList<String>();
 		int size = 0;
-		ResultSet queryResult = null;
+		List<Map<String, String>> queryResult = null;
 		queryResult = dbcon.getData("select rating, comment from external_comment where rating < 4");
-		try{
-			while(queryResult.next())
-				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
-			queryResult.last();
-			size = queryResult.getRow();
-			System.out.println("bad : " + size);
-		} catch (SQLException e) {
-			
-		}
+		
+		
+		size = queryResult.size();
+		System.out.println("bad : " + size);
+		for(int i = queryResult.size() - 1; i >= 0; i--){
+			result.add(queryResult.get(i).get("rating") + "\t" + queryResult.get(i).get("comment"));
+			queryResult.remove(i);
+		}		
+		
 		queryResult = dbcon.getData("select rating, comment from external_comment where rating > 7 limit " + size);
-		try{
-			while(queryResult.next())
-				result.add(queryResult.getInt("rating") + "\t" + queryResult.getString("comment"));
-			queryResult.last();
-			size = queryResult.getRow();
-			System.out.println("good : " + size);
-		} catch (SQLException e) {}
+		System.out.println("good : " + queryResult.size());
+		for(int i = queryResult.size() - 1; i >= 0; i--){
+			result.add(queryResult.get(i).get("rating") + "\t" + queryResult.get(i).get("comment"));
+			queryResult.remove(i);
+		}
 		
 		if(result.size() > 0)
 			return result;

@@ -21,7 +21,6 @@ public class NaverImage extends NaverSearch {
 
 	@Override
 	public Object getResult(String keyword) {
-		// TODO Auto-generated method stub
 		int start = 1, display = 1;
 		NaverConnector connector;
 		String xmlData;
@@ -61,6 +60,7 @@ public class NaverImage extends NaverSearch {
 		return link.substring(start);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException{
 		String keyword = "더부페";
 		ArrayList<Map<String, String>> result;

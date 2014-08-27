@@ -27,7 +27,6 @@ public class TwitterSearch implements ParserInterface{
 	
 	@Override
 	public Object getResult(String keyword) {
-		// TODO Auto-generated method stub
 		ArrayList<String> result = new ArrayList<String>();
 		Connector twitterConnector = Connector.getInstance(Connector.TWITTER);
 		queryResult = (QueryResult) twitterConnector.connect(keyword);
@@ -43,6 +42,7 @@ public class TwitterSearch implements ParserInterface{
 		return result;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		TwitterSearch ts = new TwitterSearch();
 		ArrayList<String> result = (ArrayList<String>)ts.getResult("홍대");
@@ -54,7 +54,6 @@ public class TwitterSearch implements ParserInterface{
 			}
 			bw.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

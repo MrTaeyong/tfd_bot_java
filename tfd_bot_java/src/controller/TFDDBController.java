@@ -177,11 +177,7 @@ public class TFDDBController extends DBController{
 //			System.out.println("DBms connection success");
 //			System.out.println("DB load success");
 			
-			// create query string.
-			String test1 = String.format("insert into %s ", tableName);
-			
 			// 쿼리를 하기 위해서 칼럼 이름들을 가져온다.
-			String delim = ",";
 			Map<String, String> insertData = insertDatas.get(0);
 			String columns = generateColumn(insertData);
 			String values = generateValues(insertData);
