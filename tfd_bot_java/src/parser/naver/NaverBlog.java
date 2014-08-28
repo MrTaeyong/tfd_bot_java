@@ -47,7 +47,7 @@ class NaverBlog extends NaverSearch{
 	}
 	
 	public static enum CategoryName {
-		CAFFE("카페"), RESTAURANT("음식점");
+		CAFFE("카페"), RESTAURANT("음식점"), CULTURE("문화,예술");
 		String value;
 		CategoryName(String value){
 			this.value = value;
@@ -299,6 +299,13 @@ class NaverBlog extends NaverSearch{
 		return false;
 	}
 	
+	/**
+	 * Method for blog filtering by inspecting title of blog
+	 * @param blogData
+	 * @param placeName
+	 * @param local
+	 * @return
+	 */
 	private List<Map<String, String>> _filterBlog(List<Map<String, String>> blogData, String placeName, String local){
 		List<Integer> indexOfDeletedData = new ArrayList<Integer>();
 		for(int i = 0; i < blogData.size(); i++){
@@ -313,6 +320,7 @@ class NaverBlog extends NaverSearch{
 	
 	public static void main(String[] args) throws IOException {
 		NaverBlog nb = new NaverBlog();
-		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CAFFE);
+//		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CAFFE);
+		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CULTURE);
 	}
 }
