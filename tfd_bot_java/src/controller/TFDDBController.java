@@ -221,6 +221,10 @@ public class TFDDBController extends DBController{
 			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				con.close();
+			} catch (SQLException e) {}
 		}
 		
 	}
