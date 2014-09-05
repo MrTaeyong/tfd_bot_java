@@ -79,6 +79,7 @@ class NaverLocal extends NaverSearch{
 //			resultMap.put("pointy", String.format("%.8f", gp.getY()));
 			resultMap.put("pointx", e.getElementsByTag("mapx").text());
 			resultMap.put("pointy", e.getElementsByTag("mapy").text());
+			resultMap.put("image_url", "");
 			resultList.add(resultMap);
 		}
 		return resultList;
