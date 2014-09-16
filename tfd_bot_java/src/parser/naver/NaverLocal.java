@@ -17,6 +17,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
+import util.CoordinatesConverter;
+import util.GeoPoint;
 import controller.DBController;
 
 /**
@@ -74,11 +76,11 @@ class NaverLocal extends NaverSearch{
 			resultMap.put("address", e.getElementsByTag("address").text());
 			resultMap.put("description", e.getElementsByTag("description").text().replaceAll("(<b>|</b>)", ""));
 			resultMap.put("url", _getLink(e.toString()));
-//			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
-//			resultMap.put("pointx", String.format("%.8f", gp.getX())); 
-//			resultMap.put("pointy", String.format("%.8f", gp.getY()));
-			resultMap.put("pointx", e.getElementsByTag("mapx").text());
-			resultMap.put("pointy", e.getElementsByTag("mapy").text());
+			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
+			resultMap.put("pointx", String.format("%.8f", gp.getX())); 
+			resultMap.put("pointy", String.format("%.8f", gp.getY()));
+//			resultMap.put("pointx", e.getElementsByTag("mapx").text());
+//			resultMap.put("pointy", e.getElementsByTag("mapy").text());
 			resultMap.put("image_url", "");
 			resultList.add(resultMap);
 		}
