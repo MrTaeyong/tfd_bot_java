@@ -46,25 +46,13 @@ public class NaverConnector extends Connector{
 	public Object connect(String keyword) {
 		// TODO Auto-generated method stub
 		String completeUrl;
-		String xmlData = "";
 		try {
 			// Initialize API URL.
 			completeUrl = _BASE_URL + "&" + _getParam(keyword);
 			 
-			// Get XML data from naver search API.
 			URL url = new URL(completeUrl);
-			URLConnection connection = url.openConnection();
-			BufferedReader bufferedData = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			
-			// Convert data of BufferedReader type to String type
-			String tmp;
-			while((tmp = bufferedData.readLine()) != null)
-				xmlData += tmp;
-			if(xmlData.equals("") || xmlData.indexOf("error xmlns") != -1)
-				return null;
-			
+			Document doc = Jsoup.parse(url, 10000);
 			// Check range of contents
-			Document doc = Jsoup.parse(xmlData);
 			Elements elements = doc.getElementsByTag("total");
 			try{
 				if(Integer.parseInt(elements.get(0).text()) < _start)
@@ -73,7 +61,7 @@ public class NaverConnector extends Connector{
 				return null;
 			}
 			
-			return xmlData;
+			return doc.toString();
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 //			e.printStackTrace();
