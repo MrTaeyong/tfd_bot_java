@@ -6,6 +6,7 @@
  */
 package parser.naver;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -157,7 +158,10 @@ class NaverBlog extends NaverSearch{
 			// URL의 커넥터를 사용하면 Jsoup에서 본문내용을 파싱하지 못함...
 			doc = Jsoup.connect(src).get();
 			result.put(FieldName.BLOG_DATE.value, doc.getElementsByClass("_postAddDate").text().trim().replaceAll("/", "-"));
-			result.put(FieldName.BLOG_CONTENT.value, doc.getElementById("post-view" + logNo).text().trim());
+			Element el = doc.getElementById("post-view" + logNo);
+			String content = el.text().trim() + "\n" + _getAddressInBlog(el);
+			result.put(FieldName.BLOG_CONTENT.value, content);
+//			result.put(FieldName.BLOG_CONTENT.value, doc.getElementById("post-view" + logNo).text().trim());
 			result.put(FieldName.BLOG_IMAGES.value, _getImageLinkOfBlog(logNo, doc));
 			
 			if(result.size() > 0)
@@ -171,6 +175,29 @@ class NaverBlog extends NaverSearch{
 //			System.out.println("Date is not exists");
 		}
 		return null;
+	}
+	
+	private String _getAddressInBlog(Element element) {
+		try {
+			Elements elements = element.getElementsByTag("iframe");
+			String mapUrl = "";
+			for(int i = 0; i < elements.size(); i++) {
+				if(elements.get(i).attr("title").equals("포스트에 첨부된 지도"))
+					mapUrl =  elements.get(i).attr("src");
+			}
+			if(mapUrl.equals(""))	//지도가 없는 블로그일 때 공백 반환
+				return "";
+			
+			URL url = new URL(mapUrl);
+			Document doc = Jsoup.parse(url, 5000);
+			String javascript = doc.toString();
+			int start = javascript.indexOf("address")+12;
+			int end = javascript.indexOf(",", start)-2;
+			return javascript.substring(start, end);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
 	}
 	
 	private String _getImageLinkOfBlog(String logNo, Document doc){
