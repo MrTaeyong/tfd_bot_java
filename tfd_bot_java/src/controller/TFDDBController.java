@@ -79,8 +79,8 @@ public class TFDDBController extends DBController{
 	}
 	
 //	private final String _BASE_URL = "jdbc:mysql://203.253.23.40/tfd";
-//	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
-	private final String _BASE_URL = "jdbc:mysql://220.70.0.4/tfd";
+	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
+//	private final String _BASE_URL = "jdbc:mysql://220.70.0.4/tfd";
 	
 	public static final String PLACE_FIELD_NAME = "name";
 	public static final String PLACE_FIELD_CATE = "category";
@@ -167,7 +167,7 @@ public class TFDDBController extends DBController{
 	 *            실제 DB에 들어갈 필드 네임을 Key 값으로 필드의 값을 Value값 형태를 한 HashMap 객체를
 	 *            전달하도록 한다.
 	 */
-	public void insertData(String tableName, ArrayList<Map<String, String>> insertDatas) {
+	public void insertData(String tableName, List<Map<String, String>> insertDatas) {
 		Connection con = null;
 		PreparedStatement preparedStmt = null;
 
@@ -219,9 +219,8 @@ public class TFDDBController extends DBController{
 			
 			con.prepareStatement(query).execute();
 			con.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
+		} catch (Exception e) {}
+		finally {
 			try {
 				con.close();
 			} catch (SQLException e) {}

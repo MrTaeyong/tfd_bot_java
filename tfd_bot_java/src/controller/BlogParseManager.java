@@ -98,13 +98,16 @@ public class BlogParseManager {
 	 */
 	private boolean _isValidBlog(String blogContent, String placeName, String local){
 		if(blogContent.indexOf(local) >= 0){
+			if(blogContent.indexOf(local) < 0)
+				return false;
+			
 			String[] placeNameToken = placeName.split(" ");
 			for(String token : placeNameToken){
-				if(blogContent.indexOf(token) >= 0)
-					return true;
+				if(blogContent.indexOf(token) < 0)
+					return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	/**

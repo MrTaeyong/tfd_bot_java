@@ -315,12 +315,17 @@ public class PosNagWordCounter extends TextMining{
 			if(sentenceList.get(i) == null)
 				continue;
 			String sentence = WordAnalyzePreProcessor.removeConsonantAndVowel(sentenceList.get(i));
-			Node taggedWords = tagger.parseToNode(sentence);
-			for(; taggedWords != null; taggedWords = taggedWords.getNext()){
-				if(taggedWords.getFeature().matches(_wordClass)){
-					String word = taggedWords.getSurface() + "\t" + taggedWords.getFeature();
-					result.add(word);
-				}
+//			Node taggedWords = tagger.parseToNode(sentence);
+//			for(; taggedWords != null; taggedWords = taggedWords.getNext()){
+//				if(taggedWords.getFeature().matches(_wordClass)){
+//					String word = taggedWords.getSurface() + "\t" + taggedWords.getFeature();
+//					result.add(word);
+//				}
+//			}
+			String[] taggedWords = tagger.parse(sentence).split("\n");
+			for(String taggedWord : taggedWords) {
+				if(taggedWord.matches(_wordClass))
+					result.add(taggedWord);
 			}
 			sentenceList.remove(i);
 		}
@@ -351,6 +356,36 @@ public class PosNagWordCounter extends TextMining{
 		if(result.size() > 0)
 			return result;
 		return null;
+	}
+	
+	public List<String> getBlogOfCategoryFromDB(String category, DBController dbcon) {
+		List<Map<String, String>> result = dbcon.getData("select content from blog_test where place_name in"
+				+ "(select name from place_info where category in "
+				+ "(select sub_group from category where c_group='" + category + "'))");
+		List<String> blog = new ArrayList<String>();
+		
+		for(Map<String, String> content : result)
+			blog.add(content.get("content"));
+		
+		if(blog.size() > 0)
+			return blog;
+		return null;
+	}
+	
+	public void temp(){
+		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
+		List<Map<String, String>> place = dbcon.getData("select name from place_info where update_flag=1");
+		
+		for(Map<String, String> p : place) {
+			String name = p.get("name");
+			List<Map<String, String>> image = dbcon.getData("select place_name, link from place_image where link <> '' and place_name='"+ name + "' limit 1");
+			dbcon.queryExecute("update place_info set image_url='" + image.get(0).get("link") + "' where name='" + name + "'");
+		}
+	}
+	
+	public void deleteInvalidLink() {
+		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
+		dbcon.queryExecute("delete from place_image where link not like '%.jpg%' and link not like '%.png%' and link not like '%.gif%' and link not like '%.jpeg%'");
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -384,9 +419,11 @@ public class PosNagWordCounter extends TextMining{
 //		}
 //		fw.close();
 		
-		Set<String> result = counter.getWordOfSentences(counter.getSentenceFromFile(new File("/Users/taeyong/Desktop/blogTest3.txt")));
-		for(String word : result)
-			fw.write(word + "\n");
-		fw.close();
+//		Set<String> result = counter.getWordOfSentences(counter.getSentenceFromFile(new File("/Users/taeyong/Desktop/blogTest3.txt")));
+//		Set<String> result = counter.getWordOfSentences(counter.getBlogOfCategoryFromDB("술집", DBController.newInstance(DBController.Type.TFD)));
+//		for(String word : result)
+//			fw.write(word + "\n");
+//		fw.close();
+		counter.temp();
 	}
 }
