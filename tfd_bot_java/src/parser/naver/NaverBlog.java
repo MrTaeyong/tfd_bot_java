@@ -6,7 +6,6 @@
  */
 package parser.naver;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import parser.Connector;
-import controller.DBController;
 
 /**
  * @Class	: NaverBlog
@@ -28,10 +26,9 @@ import controller.DBController;
  * @Author	: Taeyong
  */
 class NaverBlog extends NaverSearch{
-	private static final DBController _dbcon = DBController.newInstance(DBController.Type.TFD);
 	public static enum FieldName {
 		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
-		BLOGGER_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
+		BLOG_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
 		PLACE_NAME("place_name"), PLACE_IMAGE("link");
 		String value;
 		FieldName(String value){
@@ -101,11 +98,6 @@ class NaverBlog extends NaverSearch{
 			// 블로그 중복 검사
 			String title = e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", "");
 			String writer = e.getElementsByTag("bloggername").text();
-//			List<Map<String, String>> duplicationCheck = _dbcon.getData("select title from blog_test where title=\"" + title + "\" and writer=\"" + writer + "\"");
-//			if(duplicationCheck != null){
-//				fail++;
-//				continue;	// 중복되면 다음 블로그로..
-//			}
 			
 			String link;
 			try{
@@ -125,7 +117,7 @@ class NaverBlog extends NaverSearch{
 			resultMap.putAll(dateAndContent); // Add blog content and date
 			resultMap.put(FieldName.TITLE.value, title); // Add title
 			resultMap.put(FieldName.BLOGGER_NAME.value, writer); // Add blogger name
-			resultMap.put(FieldName.BLOGGER_LINK.value, e.getElementsByTag("bloggerlink").text()); // Add blog link
+//			resultMap.put(FieldName.BLOGGER_LINK.value, e.getElementsByTag("bloggerlink").text()); // Add blog link
 			resultList.add(resultMap);
 		}
 		
@@ -146,7 +138,7 @@ class NaverBlog extends NaverSearch{
 			URL url = new URL(naverAPIUrl);
 			doc = Jsoup.parse(url, 5000);
 			
-			// Extracting the address contained in the mainFrame
+			// mainFrame에 포함되어 있는 주소를 추출
 			src = doc.getElementById("mainFrame").toString().replace("&amp;", "&");
 			start = src.indexOf("src=") + 5;
 			end = src.indexOf("&beginTime");
@@ -163,6 +155,7 @@ class NaverBlog extends NaverSearch{
 			result.put(FieldName.BLOG_CONTENT.value, content);
 //			result.put(FieldName.BLOG_CONTENT.value, doc.getElementById("post-view" + logNo).text().trim());
 			result.put(FieldName.BLOG_IMAGES.value, _getImageLinkOfBlog(logNo, doc));
+			result.put(FieldName.BLOG_LINK.value, src);
 			
 			if(result.size() > 0)
 				return result;
@@ -181,6 +174,8 @@ class NaverBlog extends NaverSearch{
 		try {
 			Elements elements = element.getElementsByTag("iframe");
 			String mapUrl = "";
+			
+			// 지도가 포함된 <iframe> 태그를 찾음
 			for(int i = 0; i < elements.size(); i++) {
 				if(elements.get(i).attr("title").equals("포스트에 첨부된 지도"))
 					mapUrl =  elements.get(i).attr("src");
@@ -188,6 +183,7 @@ class NaverBlog extends NaverSearch{
 			if(mapUrl.equals(""))	//지도가 없는 블로그일 때 공백 반환
 				return "";
 			
+			// 네이버 지도로 접속하여 지도에 포함된 주소를 파싱
 			URL url = new URL(mapUrl);
 			Document doc = Jsoup.parse(url, 5000);
 			String javascript = doc.toString();
@@ -216,12 +212,5 @@ class NaverBlog extends NaverSearch{
 		end = item.indexOf("<description>");
 		item = item.substring(start+8, end);
 		return item;
-	}
-	
-	public static void main(String[] args) throws IOException {
-		NaverBlog nb = new NaverBlog();
-//		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CAFFE);
-//		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.CULTURE);
-//		nb.getAllPlaceOfCategory(NaverBlog.CategoryName.PUB);
 	}
 }

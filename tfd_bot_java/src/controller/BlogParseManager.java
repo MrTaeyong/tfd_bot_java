@@ -40,7 +40,7 @@ public class BlogParseManager {
 	}	
 	
 	@SuppressWarnings("unchecked")
-	public void getBlogAboutAllPlaceOfCategory(){
+	public void getBlog(){
 		NaverSearch naverBlogSearcher = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
 		ArrayList<Map<String, String>> result;
 		List<Map<String, String>> placeList = _dbcon.getData("select name, address from " + _PLACE_INFO_TABLE_NAME + " where update_flag=0");
@@ -80,11 +80,18 @@ public class BlogParseManager {
 	
 	/**
 	 * Method for Checking validity of blog content using confirm place name and local.
-	 * @param blogContent Sentence of blog
-	 * @param checkString Checking string 
+	 * @param title 
+	 * @param content
+	 * @param placeName
+	 * @param placeAddr
 	 * @return Return boolean value about validity of blog
 	 */
 	private boolean _isValidBlog(String title, String content, String placeName, String placeAddr){
+		/*
+		 * 1. 제목에서 상호명과 지역명을 포함하는 블로그 파싱 > 부정확
+		 * 2. 제목에서 상호명을 포함하고 지점명이나 지역명을 포함하는 블로그 중 본문에 지점명or지역명or상호의 주소를 포함 > 부정확
+		 * 3. 제목에서 상호명을 포함하는 블로그 중 본문에 상호의 주소를 포함 > 정확 (but 갯수가 적음)
+		 */
 		String[] placeNameToken = placeName.split(" ");
 		String branch;
 		int branchIndex = -1;
@@ -162,14 +169,6 @@ public class BlogParseManager {
 		return null;
 	}
 	
-	/**
-	 * @method Name	: splitAddress
-	 * @date		: 2014. 9. 17.
-	 * @author		: taeyong
-	 * @description	:
-	 * @param fullAddress
-	 * @return Large scope address of splited address
-	 */
 	private String _splitAddress(String fullAddress) {
 		String[] addr = fullAddress.split("\\s\\d");
 		try {
@@ -181,6 +180,6 @@ public class BlogParseManager {
 	}
 	
 	public static void main(String[] args) {
-		new BlogParseManager().getBlogAboutAllPlaceOfCategory();
+		new BlogParseManager().getBlog();
 	}
 }
