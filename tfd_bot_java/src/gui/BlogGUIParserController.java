@@ -4,9 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class BlogGUIParserController extends Thread implements ActionListener{	
-	private ThreadListController tListController;
-	private BlogGUIParser gui;
-	private int threadCount;
+	private ThreadListController tListController; // 현재 생성된 스레드를 관리하는 객체
+	private BlogGUIParser gui; // GUI
+	private int threadCount; // 사용자가 설정한 최대 스레드 갯수
 	
 	public BlogGUIParserController() {
 		gui = new BlogGUIParser(this);
@@ -27,6 +27,9 @@ public class BlogGUIParserController extends Thread implements ActionListener{
 		}
 	}
 	
+	/**
+	 * 1초마다 GUI에 정보를 새로 고침하고 현재 스레드가 사용자가 설정한 스레드보다 적으면 스레드 생성
+	 */
 	public void run() {
 		tListController = new ThreadListController();
 		tListController.start();

@@ -33,7 +33,8 @@ class NaverBlog extends NaverSearch{
 	private int display;
 	private String nextXmlData; 
 	
-	private WebClient webClient = new WebClient();
+	private WebClient webClient = new WebClient(); //JavaScript 파싱을 위한 객체
+	
 	public static enum FieldName {
 		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
 		BLOG_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
@@ -62,13 +63,17 @@ class NaverBlog extends NaverSearch{
 		display = 100;
 	}
 
+	/**
+	 * 한번 호출될 때마다 최대 100개씩 블로그 리스트를 가져온다
+	 * @param keyword
+	 * @return 성공 : 블로그 리스트, 실패 : null
+	 */
 	public Object getResult(String keyword) {
 		NaverConnector connector;
 		String xmlData;
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_BLOG);
 		
-		// Receive XML data possible and generate resulList.
 		if(start == 1)
 			xmlData = (String)connector.connect(keyword, start, display);
 		else
@@ -89,7 +94,12 @@ class NaverBlog extends NaverSearch{
 		
 		return _getData(xmlData);
 	}
-		
+	
+	/**
+	 * 블로그 리스트가 담긴 xmlData를 통해 기본정보를 파싱하고, 기본정보에서 블로그의 주소를 파싱하여 추가 내용을 파싱한다
+	 * @param xmlData
+	 * @return 제목, 블로거, 블로그 본문, 작성일, 블로그의 주소, 이미지 리스트, 방문자수, 공감수를 반환
+	 */
 	private ArrayList<Map<String, String>> _getData(String xmlData){
 		int success = 0, fail = 0;
 		if(xmlData == null || xmlData.length() < 1)
@@ -132,6 +142,11 @@ class NaverBlog extends NaverSearch{
 		return resultList;
 	}
 	
+	/**
+	 * 네이버 블로그의 주소를 받아 세부적인 정보를 파싱한다
+	 * @param naverAPIUrl
+	 * @return 블로그 작성일, 블로그 본문, 이미지 리스트, 방문자수, 공감수, 블로그 주소를 반환
+	 */
 	private Map<String, String> _getBlogContent(String naverAPIUrl){
 		Document doc;
 		String src, logNo;
@@ -177,6 +192,12 @@ class NaverBlog extends NaverSearch{
 		return null;
 	}
 	
+	/**
+	 * 블로그에서 위젯에 포함된 방문자 수를 파싱한다
+	 * @param blogDoc
+	 * @param blogUrl
+	 * @return 성공 : 방문자수, 실패 : 0
+	 */
 	private int _getBlogTodayCount(Document blogDoc, String blogUrl) {
 		try {
 			Element element = blogDoc.getElementById("blog-counter");
@@ -194,6 +215,12 @@ class NaverBlog extends NaverSearch{
 		
 	}
 	
+	/**
+	 * 블로그에서 블로그 공감 갯수를 파싱한다.
+	 * @param blogDoc
+	 * @param logNo
+	 * @return 성공 : 공감 수, 실패 : 0
+	 */
 	private int _getBlogSympathyCount(Document blogDoc, String logNo) {
 		try {
 			return Integer.parseInt(blogDoc.getElementById("Sympathy" + logNo).text().substring(3));
@@ -202,6 +229,11 @@ class NaverBlog extends NaverSearch{
 		}
 	}
 	
+	/**
+	 * 블로그에 포함된 주소에서 주소를 파싱한다
+	 * @param element
+	 * @return 성공 : 파싱된 주소, 실패 : 공백
+	 */
 	private String _getAddressInBlog(Element element) {
 		try {
 			Elements elements = element.getElementsByTag("iframe");
@@ -228,6 +260,12 @@ class NaverBlog extends NaverSearch{
 		}
 	}
 	
+	/**
+	 * 블로그에 포함된 이미지 중 유의미한 이미지를 파싱한다
+	 * @param logNo
+	 * @param doc
+	 * @return 이미지 주소 리스트
+	 */
 	private String _getImageLinkOfBlog(String logNo, Document doc){
 		String result = "";
 		Elements imageLinks = doc.getElementById("post-view" + logNo).getElementsByTag("img");
@@ -238,6 +276,12 @@ class NaverBlog extends NaverSearch{
 		return result;
 	}
 	
+	/**
+	 * 네이버 API를 통해 얻어온 XML에서 블로그 주소를 파싱 (JSoup이 파싱하지 못함..)
+	 * @param item
+	 * @return 블로그 주소
+	 * @throws StringIndexOutOfBoundsException
+	 */
 	private String _getLink(String item) throws StringIndexOutOfBoundsException {
 		int start, end;
 		start = item.indexOf("<link />");
@@ -245,13 +289,10 @@ class NaverBlog extends NaverSearch{
 		item = item.substring(start+8, end);
 		return item;
 	}
-	
-	public boolean hasNext() {
-		if(nextXmlData == null && start != 1)
-			return false;
-		return true;
-	}
 
+	/**
+	 * 현재 진행 중인 start번호를 반환
+	 */
 	@Override
 	public Object getCurrentState() {
 		return start;

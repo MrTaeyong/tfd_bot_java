@@ -10,6 +10,9 @@ public class ThreadListController extends Thread {
 		threadList = new Vector<BlogParseThread>();
 	}
 	
+	/**
+	 * 새로운 스레드를 생성하여 실행하고 스레드 리스트에 넣음
+	 */
 	public void addThread() {
 		BlogParseThread thread = new BlogParseThread();
 		thread.start();
@@ -17,6 +20,9 @@ public class ThreadListController extends Thread {
 		threadCount++;
 	}
 	
+	/**
+	 * 10초마다 스레드 리스트를 확인하여 동작이 완료된 스레드를 리스트에서 제거
+	 */
 	public void run() {
 		while(true) {
 			try {
@@ -26,6 +32,7 @@ public class ThreadListController extends Thread {
 					if(bpt.isAlive())
 						tempThreadList.add(bpt);
 				}
+				threadList = null;
 				threadList = tempThreadList;
 				tempThreadList = null;
 				threadCount = threadList.size();
@@ -39,6 +46,10 @@ public class ThreadListController extends Thread {
 		return threadCount;
 	}
 	
+	/**
+	 * 현재 리스트에 있는 스레드의 장소명과 진행사항을 문자열로 만들어 반환
+	 * @return
+	 */
 	public String getLog() {
 		String log = "";
 		try {
