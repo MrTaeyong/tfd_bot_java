@@ -2,8 +2,10 @@ package gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
-public class BlogGUIParserController extends Thread implements ActionListener{	
+public class BlogGUIParserController extends Thread implements ActionListener {	
 	private ThreadListController tListController; // 현재 생성된 스레드를 관리하는 객체
 	private BlogGUIParser gui; // GUI
 	private int threadCount; // 사용자가 설정한 최대 스레드 갯수
@@ -11,6 +13,7 @@ public class BlogGUIParserController extends Thread implements ActionListener{
 	public BlogGUIParserController() {
 		gui = new BlogGUIParser(this);
 		gui.currentThread.setText("0");
+		Runtime.getRuntime().addShutdownHook(new ShutdownHookThread());
 	}
 	
 	@Override
@@ -44,6 +47,12 @@ public class BlogGUIParserController extends Thread implements ActionListener{
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class ShutdownHookThread extends Thread {
+		public void run() {
+			tListController.stopThread();
 		}
 	}
 	

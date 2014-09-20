@@ -2,19 +2,23 @@ package gui;
 
 import java.util.Vector;
 
+import controller.BlogParseManager;
+import controller.DBController;
+
 public class ThreadListController extends Thread {
-	private Vector<BlogParseThread> threadList;
+	private final String _PLACE_TABLE_NAME = "place_info_2";
+	private Vector<BlogParseManager> threadList;
 	private int threadCount;
 	
 	public ThreadListController() {
-		threadList = new Vector<BlogParseThread>();
+		threadList = new Vector<BlogParseManager>();
 	}
 	
 	/**
 	 * 새로운 스레드를 생성하여 실행하고 스레드 리스트에 넣음
 	 */
 	public void addThread() {
-		BlogParseThread thread = new BlogParseThread();
+		BlogParseManager thread = new BlogParseManager();
 		thread.start();
 		threadList.add(thread);
 		threadCount++;
@@ -24,11 +28,12 @@ public class ThreadListController extends Thread {
 	 * 10초마다 스레드 리스트를 확인하여 동작이 완료된 스레드를 리스트에서 제거
 	 */
 	public void run() {
+		Vector<BlogParseManager> tempThreadList;
 		while(true) {
 			try {
 				Thread.sleep(10000);
-				Vector<BlogParseThread> tempThreadList = new Vector<BlogParseThread>();
-				for(BlogParseThread bpt : threadList) {
+				tempThreadList = new Vector<BlogParseManager>();
+				for(BlogParseManager bpt : threadList) {
 					if(bpt.isAlive())
 						tempThreadList.add(bpt);
 				}
@@ -53,11 +58,21 @@ public class ThreadListController extends Thread {
 	public String getLog() {
 		String log = "";
 		try {
-			for(BlogParseThread blogThread : threadList)
-				log += blogThread.blogManager.getCurrentPlaceName() + "\t" + blogThread.blogManager.getCurrentStartNumber() + "\n";
+			for(BlogParseManager blogThread : threadList)
+				log += blogThread.getCurrentPlaceName() + "\t" + blogThread.getCurrentStartNumber() + "\n";
 			return log;
 		} catch(Exception e) {
 			return "";
+		}
+	}
+	
+	public void stopThread() {
+		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
+		String placeName;
+		for(BlogParseManager bpt : threadList) {
+			bpt.interrupt();
+			placeName = bpt.getCurrentPlaceName();
+			dbcon.queryExecute("update " + _PLACE_TABLE_NAME + " set update_flag=0 where name='" + placeName + "'");
 		}
 	}
 }

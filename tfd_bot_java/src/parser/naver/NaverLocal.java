@@ -26,39 +26,44 @@ import controller.DBController;
  * @Date	: 2014. 05. 24. 
  * @Author	: Taeyong
  */
-class NaverLocal extends NaverSearch{	
+class NaverLocal extends NaverSearch{
+	private int start, display;
+	private String nextXmlData;
+	
 	public NaverLocal(){
 		super();
+		start = 1;
+		display = 100;
 	}
 	
 	public Object getResult(String keyword) {
-		int start = 1, display = 100;
 		NaverConnector connector;
 		String xmlData;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_LOCAL);
 		
-		// Receive all XML data possible and generate resulList.
-//		xmlData = (String)connector.connect(keyword);
-		while(true){
-			xmlData = (String)connector.connect(keyword, start, display);
-			if(xmlData == null)
-				break;
-			resultList.addAll(_getData(xmlData));
-			start += 100;
-			if(start == 901)
-				display = 99; // 901~999
-			else if(start == 1001){
-	            start = 1000;
-	            display = 100; // 1000~1099
-			}
+		if(start == 1)
+			xmlData = (String)connector.connect(keyword);
+		else
+			xmlData = nextXmlData;
+		
+		xmlData = (String)connector.connect(keyword, start, display);
+
+		start += 100;
+		if(start == 901)
+			display = 99; // 901~999
+		else if(start == 1001){
+            start = 1000;
+            display = 100; // 1000~1099
 		}
 		
-		// Return result list.
-		if(resultList != null && resultList.size() > 0)
-			return resultList;
-		return null;
+		if(xmlData == null)
+			return null;
+		
+		nextXmlData = (String)connector.connect(keyword);
+		
+		return _getData(xmlData);
 	}
 	
 	private ArrayList<Map<String, String>> _getData(String xmlData){
@@ -79,8 +84,6 @@ class NaverLocal extends NaverSearch{
 			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
 			resultMap.put("pointx", String.format("%.8f", gp.getX())); 
 			resultMap.put("pointy", String.format("%.8f", gp.getY()));
-//			resultMap.put("pointx", e.getElementsByTag("mapx").text());
-//			resultMap.put("pointy", e.getElementsByTag("mapy").text());
 			resultMap.put("image_url", "");
 			resultList.add(resultMap);
 		}
@@ -100,11 +103,13 @@ class NaverLocal extends NaverSearch{
 		ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
 		NaverSearch ns = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_LOCAL);
 		ArrayList<Map<String, String>> r = (ArrayList<Map<String, String>>) ns.getResult("홍대 관람");
+		Map<String, String> temp;
 		for(Map<String, String> elem : r){
-			Map<String, String> temp = new HashMap<String, String>();
+			temp = new HashMap<String, String>();
 			temp.put("sub_group", elem.get("category"));
 			temp.put("c_group", "");
 			query.add(temp);
+			temp.clear();
 		}
 		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		dbcon.insertData("category", query);

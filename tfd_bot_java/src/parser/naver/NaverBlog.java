@@ -7,6 +7,7 @@
 package parser.naver;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,14 +107,15 @@ class NaverBlog extends NaverSearch{
 			return null;
 		ArrayList<Map<String, String>> resultList = new ArrayList<Map<String,String>>();
 		Map<String, String> resultMap;
+		Map<String, String> blogContent;
+		String title, writer, link;
 		Document doc = Jsoup.parse(xmlData);
 		Elements elements = doc.getElementsByTag("item");
 		
 		for(Element e : elements){
-			String title = e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", "");
-			String writer = e.getElementsByTag("bloggername").text();
+			title = e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", "");
+			writer = e.getElementsByTag("bloggername").text();
 			
-			String link;
 			try{
 				link = _getLink(e.toString());
 			}catch (StringIndexOutOfBoundsException exception){
@@ -121,7 +123,7 @@ class NaverBlog extends NaverSearch{
 				continue;
 			}
 			
-			Map<String, String> blogContent = _getBlogContent(link);
+			blogContent = _getBlogContent(link);
 			if(blogContent == null){
 				fail++;
 				continue;

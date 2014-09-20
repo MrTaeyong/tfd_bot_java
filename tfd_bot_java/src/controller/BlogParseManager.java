@@ -8,7 +8,7 @@ import java.util.Map;
 import parser.naver.NaverSearch;
 import controller.DBController.Type;
 
-public class BlogParseManager {
+public class BlogParseManager extends Thread {
 	private final String _BLOG_TABLE_NAME = "blog_2";
 	private final String _PLACE_INFO_TABLE_NAME = "place_info_2";
 	private final String _IMAGE_TABLE_NAME = "place_image_2";
@@ -51,26 +51,31 @@ public class BlogParseManager {
 	public boolean getBlog(){
 		NaverSearch naverBlogSearcher = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
 		ArrayList<Map<String, String>> result = null;
-		Map<String, String> place;
+		Map<String, String> place, temp;
+		String placeName, addr;
+		
 		try {
 			place = _dbcon.getData("select name, address from " + _PLACE_INFO_TABLE_NAME + " where update_flag=0 order by rand() limit 1").get(0);
+			placeName = place.get("name");
+			addr = place.get("address");
+			currentPlaceName = placeName;
+			_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'"); // 파싱하는 동안 다른 사용자가 동일한 장소를 파싱하지 못하도록 설정
 		} catch(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException e) {
 			return false;
 		} catch(Exception e) {
 			return false;
 		}
-		
-		String placeName = place.get("name");
-		String addr = place.get("address");
-		currentPlaceName = placeName;
-		
+
 		System.out.println(placeName + " is being processed.");
 		currentStartNumber = 1;
 		
-		while((result = (ArrayList<Map<String, String>>)naverBlogSearcher.getResult(placeName)) != null) {			
+		while((result = (ArrayList<Map<String, String>>)naverBlogSearcher.getResult(placeName)) != null) {
+			try {
+				Thread.sleep(0); // 외부에서 interrupt() 요청시 여기에서 멈출 수 있도록 sleep 삽입
+			} catch (InterruptedException e) {}
 			result = (ArrayList<Map<String, String>>) _filterBlog(result, placeName, addr);
 			
-			Map<String, String> temp = new HashMap<String, String>();
+			temp = new HashMap<String, String>();
 			ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
 			for(Map<String, String> blogContent : result){
 				// 장소정보 입력을 위한 작업
@@ -93,8 +98,8 @@ public class BlogParseManager {
 				query.clear();
 			}
 			// 장소정보에 현재 장소가 정보 업데이트가 되었음을 표시
-			if(result != null && result.size() > 0)
-				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'");
+//			if(result != null && result.size() > 0)
+//				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'");
 			result.clear();
 			
 			currentStartNumber = (Integer)naverBlogSearcher.getCurrentState();
@@ -171,9 +176,10 @@ public class BlogParseManager {
 	 */
 	private List<Map<String, String>> _filterBlog(List<Map<String, String>> blogData, String placeName, String placeAddr){
 //		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+		String title, content;
 		for(int i = blogData.size() - 1; i >= 0; i--){
-			String title = blogData.get(i).get(FieldName.TITLE.value).toLowerCase().replaceAll(" ", "");
-			String content = blogData.get(i).get(FieldName.BLOG_CONTENT.value);
+			title = blogData.get(i).get(FieldName.TITLE.value).toLowerCase().replaceAll(" ", "");
+			content = blogData.get(i).get(FieldName.BLOG_CONTENT.value);
 			if(!_isValidBlog(title, content, placeName.toLowerCase(), placeAddr))
 				blogData.remove(i);
 		}
@@ -188,18 +194,20 @@ public class BlogParseManager {
 	 */
 	private List<Map<String, String>> _generateQueryForImageTable(String delimitedLink, String placeName){
 		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+		Map<String, String> temp;
 		String[] splitedLinks = delimitedLink.split("\t");
 		
 		for(String link : splitedLinks){
-			Map<String, String> temp = new HashMap<String, String>();
+			temp = new HashMap<String, String>();
 			temp.put(FieldName.PLACE_NAME.value, placeName);
 			temp.put(FieldName.PLACE_IMAGE.value, link);
 			result.add(temp);
+			temp.clear();
 		}
 		
-		if(result.size() > 0)
-			return result;
-		return null;
+		if(result.size() <= 0)
+			result = null;
+		return result;
 	}
 	
 	/**
@@ -224,9 +232,12 @@ public class BlogParseManager {
 	public int getCurrentStartNumber() {
 		return currentStartNumber;
 	}
-	
-	public static void main(String[] args) {
-		BlogParseManager bpm = new BlogParseManager();
-		while(bpm.getBlog());
+
+	public void run() {
+		getBlog();
 	}
+//	public static void main(String[] args) {
+//		BlogParseManager bpm = new BlogParseManager();
+//		while(bpm.getBlog());
+//	}
 }
