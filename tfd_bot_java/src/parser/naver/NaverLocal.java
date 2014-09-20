@@ -110,4 +110,10 @@ class NaverLocal extends NaverSearch{
 		dbcon.insertData("category", query);
 		dbcon.insertData("place_info", r);
 	}
+
+	@Override
+	public Object getCurrentState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

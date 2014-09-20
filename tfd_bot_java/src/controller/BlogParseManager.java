@@ -14,6 +14,9 @@ public class BlogParseManager {
 	private final String _IMAGE_TABLE_NAME = "place_image_2";
 	private static DBController _dbcon;
 	
+	private String currentPlaceName;
+	private int currentStartNumber;
+	
 	static {
 		_dbcon = DBController.newInstance(Type.TFD);
 	}
@@ -21,7 +24,8 @@ public class BlogParseManager {
 	public static enum FieldName {
 		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
 		BLOGGER_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
-		PLACE_NAME("place_name"), PLACE_IMAGE("link");
+		PLACE_NAME("place_name"), PLACE_IMAGE("link"), TODAY_COUNT("today_count"),
+		SYMPATHY_COUNT("sympathy_count");
 		String value;
 		FieldName(String value){
 			this.value = value;
@@ -40,42 +44,59 @@ public class BlogParseManager {
 	}	
 	
 	@SuppressWarnings("unchecked")
-	public void getBlog(){
+	/**
+	 * DB에 있는 장소 중 업데이트 되지 않은 장소 하나에 대해서 블로그 파싱을 진행함.
+	 * @return 성공이나 DB true DB연결 실패나 파싱 실패시 false
+	 */
+	public boolean getBlog(){
 		NaverSearch naverBlogSearcher = NaverSearch.getInstance(NaverSearch.SearchType.NAVER_BLOG);
-		ArrayList<Map<String, String>> result;
-		List<Map<String, String>> placeList = _dbcon.getData("select name, address from " + _PLACE_INFO_TABLE_NAME + " where update_flag=0");
+		ArrayList<Map<String, String>> result = null;
+		Map<String, String> place;
+		try {
+			place = _dbcon.getData("select name, address from " + _PLACE_INFO_TABLE_NAME + " where update_flag=0 order by rand() limit 1").get(0);
+		} catch(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException e) {
+			return false;
+		} catch(Exception e) {
+			return false;
+		}
 		
-		for(Map<String, String> place : placeList){
-			
-			String placeName = place.get("name");
-			String addr = place.get("address");
-			
-			System.out.println(placeName + " is being processed.");
-			
-			result = (ArrayList<Map<String, String>>) naverBlogSearcher.getResult(placeName);
-			
-			if(result == null)
-				continue;
-			
+		String placeName = place.get("name");
+		String addr = place.get("address");
+		
+		currentPlaceName = placeName;
+		
+		System.out.println(placeName + " is being processed.");
+		currentStartNumber = 1;
+		
+		while((result = (ArrayList<Map<String, String>>)naverBlogSearcher.getResult(placeName)) != null) {			
 			result = (ArrayList<Map<String, String>>) _filterBlog(result, placeName, addr);
 			
-			for(Map<String, String> blogContent : result){					
-				ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
-				Map<String, String> temp = new HashMap<String, String>();
+			Map<String, String> temp = new HashMap<String, String>();
+			ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
+			for(Map<String, String> blogContent : result){
 				temp.put("place_name", placeName);
 				temp.put("title", blogContent.get(FieldName.TITLE.value));
 				temp.put("writer", blogContent.get(FieldName.BLOGGER_NAME.value));
 				temp.put("url", blogContent.get(FieldName.BLOGGER_LINK.value));
 				temp.put("content", blogContent.get(FieldName.BLOG_CONTENT.value));
 				temp.put("date", blogContent.get(FieldName.BLOG_DATE.value));
+				temp.put("today_count", blogContent.get(FieldName.TODAY_COUNT.value));
+				temp.put("sympathy_count", blogContent.get(FieldName.SYMPATHY_COUNT.value));
 				query.add(temp);
 				_dbcon.insertData(_BLOG_TABLE_NAME, query);
+				temp.clear();
+				query.clear();
 				query = (ArrayList<Map<String, String>>) _generateQueryForImageTable(blogContent.get(FieldName.BLOG_IMAGES.value), placeName);
 				if(query != null)
 					_dbcon.insertData(_IMAGE_TABLE_NAME, query);
+				query.clear();
 			}
-			_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'");
+			if(result != null && result.size() > 0)
+				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'");
+			currentStartNumber = (Integer)naverBlogSearcher.getCurrentState();
+			result.clear();
 		}
+		return true;
 	}
 	
 	/**
@@ -143,14 +164,14 @@ public class BlogParseManager {
 	 * @return
 	 */
 	private List<Map<String, String>> _filterBlog(List<Map<String, String>> blogData, String placeName, String placeAddr){
-		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
-		for(int i = 0; i < blogData.size(); i++){
+//		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
+		for(int i = blogData.size() - 1; i >= 0; i--){
 			String title = blogData.get(i).get(FieldName.TITLE.value).toLowerCase().replaceAll(" ", "");
 			String content = blogData.get(i).get(FieldName.BLOG_CONTENT.value);
-			if(_isValidBlog(title, content, placeName.toLowerCase(), placeAddr))
-				result.add(blogData.get(i));
+			if(!_isValidBlog(title, content, placeName.toLowerCase(), placeAddr))
+				blogData.remove(i);
 		}
-		return result;
+		return blogData;
 	}
 	
 	private List<Map<String, String>> _generateQueryForImageTable(String delimitedLink, String placeName){
@@ -179,7 +200,16 @@ public class BlogParseManager {
 		}
 	}
 	
+	public String getCurrentPlaceName() {
+		return currentPlaceName;
+	}
+	
+	public int getCurrentStartNumber() {
+		return currentStartNumber;
+	}
+	
 	public static void main(String[] args) {
-		new BlogParseManager().getBlog();
+		BlogParseManager bpm = new BlogParseManager();
+		while(bpm.getBlog());
 	}
 }

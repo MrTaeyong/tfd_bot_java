@@ -76,4 +76,10 @@ public class NaverImage extends NaverSearch {
 		}
 		fw.close();
 	}
+
+	@Override
+	public Object getCurrentState() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

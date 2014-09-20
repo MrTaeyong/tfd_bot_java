@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jsoup.Jsoup;
@@ -20,16 +19,26 @@ import org.jsoup.select.Elements;
 
 import parser.Connector;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+
 /**
  * @Class	: NaverBlog
  * @Date	: 2014. 05. 25. 
  * @Author	: Taeyong
  */
 class NaverBlog extends NaverSearch{
+	private int start;
+	private int display;
+	private String nextXmlData; 
+	
+	private WebClient webClient = new WebClient();
 	public static enum FieldName {
 		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
 		BLOG_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
-		PLACE_NAME("place_name"), PLACE_IMAGE("link");
+		PLACE_NAME("place_name"), PLACE_IMAGE("link"), BLOG_TODAY_COUNT("today_count"),
+		BLOG_SYMPATHY_COUNT("sympathy_count");
 		String value;
 		FieldName(String value){
 			this.value = value;
@@ -49,40 +58,36 @@ class NaverBlog extends NaverSearch{
 	
 	public NaverBlog(){
 		super();
+		start = 1;
+		display = 100;
 	}
 
 	public Object getResult(String keyword) {
-		int start = 1, display = 100;
 		NaverConnector connector;
 		String xmlData;
-		List<Map<String, String>> resultList = new ArrayList<Map<String, String>>();
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_BLOG);
 		
-		// Receive all XML data possible and generate resulList.
-		while(true){
+		// Receive XML data possible and generate resulList.
+		if(start == 1)
 			xmlData = (String)connector.connect(keyword, start, display);
-			if(xmlData == null)
-				break;
-			List<Map<String, String>> tempResult = _getData(xmlData);
-			if(tempResult == null)
-				break;
-			resultList.addAll(tempResult);
-			start += 100;
-			if(start == 901)
-				display = 99; // 901~999
-			else if(start == 1001){
-	            start = 1000;
-	            display = 100; // 1000~1099
-			}
-			else if(start >= 1100)
-				break;
+		else
+			xmlData = nextXmlData;
+		
+		start += 100;
+		if(start == 901)
+			display = 99; // 901~999
+		else if(start == 1001){
+            start = 1000;
+            display = 100; // 1000~1099
 		}
 		
-		// Return result list.
-		if(resultList.size() > 0)
-			return resultList;
-		return null;
+		if(xmlData == null)
+			return null;
+		
+		nextXmlData = (String)connector.connect(keyword, start, display);
+		
+		return _getData(xmlData);
 	}
 		
 	private ArrayList<Map<String, String>> _getData(String xmlData){
@@ -95,7 +100,6 @@ class NaverBlog extends NaverSearch{
 		Elements elements = doc.getElementsByTag("item");
 		
 		for(Element e : elements){
-			// 블로그 중복 검사
 			String title = e.getElementsByTag("title").text().replaceAll("(<b>|</b>)", "");
 			String writer = e.getElementsByTag("bloggername").text();
 			
@@ -107,24 +111,25 @@ class NaverBlog extends NaverSearch{
 				continue;
 			}
 			
-			Map<String, String> dateAndContent = _getBlogContent(link);
-			if(dateAndContent == null){
+			Map<String, String> blogContent = _getBlogContent(link);
+			if(blogContent == null){
 				fail++;
 				continue;
 			}
 			success++;
 			resultMap = new HashMap<String, String>();
-			resultMap.putAll(dateAndContent); // Add blog content and date
+			resultMap.putAll(blogContent); // Add blog content
 			resultMap.put(FieldName.TITLE.value, title); // Add title
 			resultMap.put(FieldName.BLOGGER_NAME.value, writer); // Add blogger name
-//			resultMap.put(FieldName.BLOGGER_LINK.value, e.getElementsByTag("bloggerlink").text()); // Add blog link
 			resultList.add(resultMap);
+			blogContent = null;
+			resultMap = null;
 		}
 		
 		System.out.printf("Success : %d, Fail : %d\n", success, fail);
-		if(resultList.size() > 0)
-			return resultList;
-		return null;
+		if(resultList.size() <= 0)
+			resultList = null;
+		return resultList;
 	}
 	
 	private Map<String, String> _getBlogContent(String naverAPIUrl){
@@ -155,11 +160,13 @@ class NaverBlog extends NaverSearch{
 			result.put(FieldName.BLOG_CONTENT.value, content);
 //			result.put(FieldName.BLOG_CONTENT.value, doc.getElementById("post-view" + logNo).text().trim());
 			result.put(FieldName.BLOG_IMAGES.value, _getImageLinkOfBlog(logNo, doc));
+			result.put(FieldName.BLOG_TODAY_COUNT.value, String.valueOf(_getBlogTodayCount(doc, src)));
+			result.put(FieldName.BLOG_SYMPATHY_COUNT.value, String.valueOf(_getBlogSympathyCount(doc, logNo)));
 			result.put(FieldName.BLOG_LINK.value, src);
 			
-			if(result.size() > 0)
-				return result;
-			return null;
+			if(result.size() <= 0)
+				result = null;
+			return result;
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NullPointerException e) {
@@ -168,6 +175,31 @@ class NaverBlog extends NaverSearch{
 //			System.out.println("Date is not exists");
 		}
 		return null;
+	}
+	
+	private int _getBlogTodayCount(Document blogDoc, String blogUrl) {
+		try {
+			Element element = blogDoc.getElementById("blog-counter");
+			element.text();
+//			WebClient webClient = new WebClient();
+			HtmlPage page = webClient.getPage(blogUrl);
+			DomElement visit = page.getElementById("blog-counter");
+			String[] count = visit.asText().split("\n"); 
+			return Integer.parseInt(count[0].replaceAll(",", ""));
+		} catch (Exception e) {
+			return 0;
+		} finally {
+			webClient.closeAllWindows();
+		}
+		
+	}
+	
+	private int _getBlogSympathyCount(Document blogDoc, String logNo) {
+		try {
+			return Integer.parseInt(blogDoc.getElementById("Sympathy" + logNo).text().substring(3));
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 	
 	private String _getAddressInBlog(Element element) {
@@ -212,5 +244,16 @@ class NaverBlog extends NaverSearch{
 		end = item.indexOf("<description>");
 		item = item.substring(start+8, end);
 		return item;
+	}
+	
+	public boolean hasNext() {
+		if(nextXmlData == null && start != 1)
+			return false;
+		return true;
+	}
+
+	@Override
+	public Object getCurrentState() {
+		return start;
 	}
 }

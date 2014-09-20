@@ -27,6 +27,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
+
 import controller.DBController;
 
 /**
@@ -168,8 +170,9 @@ public class PosNagWordCounter extends TextMining{
 	 * DB로 부터 평점, 댓글을 가져와 문자열 리스트를 반환
 	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
 	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
+	 * @throws CommunicationsException 
 	 */
-	public List<String> getTextFromDB(DBController dbcon){
+	public List<String> getTextFromDB(DBController dbcon) throws CommunicationsException{
 		List<String> result = new ArrayList<String>();
 		List<Map<String, String>> queryResult = null;
 		queryResult = dbcon.getData("select rating, comment from external_comment");
@@ -187,8 +190,9 @@ public class PosNagWordCounter extends TextMining{
 	 * DB로 부터 평점, 댓글을 긍정 부정의 갯수를 맞춰 가져와 문자열 리스트를 반환
 	 * @param dbcon rating과 comment필드가 있는 table을 가진 DB컨트롤러
 	 * @return 평점 + "\t" + 댓글 형태 문자열의 리스트
+	 * @throws CommunicationsException 
 	 */
-	public List<String> getBalancedTextFromDB(DBController dbcon){
+	public List<String> getBalancedTextFromDB(DBController dbcon) throws CommunicationsException{
 		// DB에 있는 댓글에서 호의적 댓글과 부정정 댓글의 갯수를 맞추어서 추출
 		List<String> result = new ArrayList<String>();
 		int size = 0;
@@ -358,7 +362,7 @@ public class PosNagWordCounter extends TextMining{
 		return null;
 	}
 	
-	public List<String> getBlogOfCategoryFromDB(String category, DBController dbcon) {
+	public List<String> getBlogOfCategoryFromDB(String category, DBController dbcon) throws CommunicationsException {
 		List<Map<String, String>> result = dbcon.getData("select content from blog_test where place_name in"
 				+ "(select name from place_info where category in "
 				+ "(select sub_group from category where c_group='" + category + "'))");
@@ -372,7 +376,7 @@ public class PosNagWordCounter extends TextMining{
 		return null;
 	}
 	
-	public void temp(){
+	public void temp() throws CommunicationsException{
 		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		List<Map<String, String>> place = dbcon.getData("select name from place_info where update_flag=1");
 		
@@ -424,6 +428,10 @@ public class PosNagWordCounter extends TextMining{
 //		for(String word : result)
 //			fw.write(word + "\n");
 //		fw.close();
-		counter.temp();
+		try {
+			counter.temp();
+		} catch (CommunicationsException e) {
+			e.printStackTrace();
+		}
 	}
 }

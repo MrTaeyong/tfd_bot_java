@@ -18,6 +18,7 @@ abstract public class NaverSearch implements ParserInterface{
 
 	@Override
 	abstract public Object getResult(String keyword);
+	abstract public Object getCurrentState();
 	
 	public static NaverSearch getInstance(SearchType type){
 		switch(type){

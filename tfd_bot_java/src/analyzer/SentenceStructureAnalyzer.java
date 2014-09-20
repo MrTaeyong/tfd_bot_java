@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.chasen.mecab.Tagger;
 
+import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
+
 import controller.DBController;
 
 /**
@@ -186,8 +188,9 @@ public class SentenceStructureAnalyzer {
 	 * DB에 모여진 블로그 내용에서 사전에 있는 단어들을 추출하여 장소에 대한 특징을 추출하는 메소드
 	 * @param placeName 특징 추출을 원하는 장소의 이름
 	 * @param dbcon
+	 * @throws CommunicationsException 
 	 */
-	public boolean getDictWordFromSentenceInDB(String placeName, DBController dbcon, File outputFile) throws FileNotFoundException{
+	public boolean getDictWordFromSentenceInDB(String placeName, DBController dbcon, File outputFile) throws FileNotFoundException, CommunicationsException{
 		List<Map<String, String>> blogContentOfPlace = dbcon.getData("select title, content from blog where place_name='" + placeName + "'");
 		FileWriter fw = null;
 		try {
@@ -215,7 +218,7 @@ public class SentenceStructureAnalyzer {
 		}
 	}
 	
-	public boolean getDictWordFromSentenceInDB(String placeName, DBController dbcon){
+	public boolean getDictWordFromSentenceInDB(String placeName, DBController dbcon) throws CommunicationsException{
 		try {
 			if(getDictWordFromSentenceInDB(placeName, dbcon, new File(placeName + ".txt")))
 				return true;
@@ -228,6 +231,10 @@ public class SentenceStructureAnalyzer {
 	
 	public static void main(String[] args) {
 		SentenceStructureAnalyzer analyzer = new SentenceStructureAnalyzer();
-		analyzer.getDictWordFromSentenceInDB("스무디킹 홍대점", DBController.newInstance(DBController.Type.TFD));
+		try {
+			analyzer.getDictWordFromSentenceInDB("스무디킹 홍대점", DBController.newInstance(DBController.Type.TFD));
+		} catch (CommunicationsException e) {
+			e.printStackTrace();
+		}
 	}
 }

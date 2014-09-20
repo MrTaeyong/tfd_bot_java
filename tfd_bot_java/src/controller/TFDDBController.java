@@ -115,7 +115,7 @@ public class TFDDBController extends DBController{
 		
 	}
 	
-	public List<Map<String, String>> getData(String query){
+	public List<Map<String, String>> getData(String query) throws com.mysql.jdbc.exceptions.jdbc4.CommunicationsException {
 		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 		String[] fields;
 		Connection con = null;
@@ -145,6 +145,8 @@ public class TFDDBController extends DBController{
 			if(result.size() > 0)
 				return result;
 			return null;
+		} catch (com.mysql.jdbc.exceptions.jdbc4.CommunicationsException e) {
+			throw e; // 네트워크 상태 등의 이유로 DB와 접속되지 않을 때
 		} catch (Exception exception){
 			return null;
 		} finally {
