@@ -36,17 +36,17 @@ public class TFDDBController extends DBController{
 	 * | height   | int(4)       | YES  |     | NULL    |       |
 	 * +----------+--------------+------+-----+---------+-------+
 	 */
-	public static enum PlaceLink{
-		LOCAL_ID("local_id"), LINK("link"), WIDTH("width"), HEIGHT("height") ;
-		final private String name;
-		
-		PlaceLink(String name) {
-		        this.name = name;
-		    }
-		    String value() {
-		        return name;
-		}
-	}
+//	public static enum PlaceLink{
+//		LOCAL_ID("local_id"), LINK("link"), WIDTH("width"), HEIGHT("height") ;
+//		final private String name;
+//		
+//		PlaceLink(String name) {
+//		        this.name = name;
+//		    }
+//		    String value() {
+//		        return name;
+//		}
+//	}
 	/*	place_info tables
 	 * +-------------+------------------+------+-----+---------+----------------+
 	 * | Field       | Type             | Null | Key | Default | Extra          |
@@ -63,33 +63,33 @@ public class TFDDBController extends DBController{
 	 * +-------------+------------------+------+-----+---------+----------------+
 	 */
 	
-	public static enum Place{
-		ID("id"), NAME("name"), CATEGORY("category"), ADDRESS("address"), TELEPHONE("telephone"), URL("url"),
-		DESC("description"), POINT_X("pointx"), POINT_Y("pointy");
-		
-		final private String name;
-		
-		Place(String name) {
-		        this.name = name;
-		    }
-		    String value() {
-		        return name;
-		}
-		
-	}
+//	public static enum Place{
+//		ID("id"), NAME("name"), CATEGORY("category"), ADDRESS("address"), TELEPHONE("telephone"), URL("url"),
+//		DESC("description"), POINT_X("pointx"), POINT_Y("pointy");
+//		
+//		final private String name;
+//		
+//		Place(String name) {
+//		        this.name = name;
+//		    }
+//		    String value() {
+//		        return name;
+//		}
+//		
+//	}
 	
 //	private final String _BASE_URL = "jdbc:mysql://203.253.23.40/tfd";
 	private final String _BASE_URL = "jdbc:mysql://203.253.23.38/tfd";
 //	private final String _BASE_URL = "jdbc:mysql://220.70.0.4/tfd";
 	
-	public static final String PLACE_FIELD_NAME = "name";
-	public static final String PLACE_FIELD_CATE = "category";
-	public static final String PLACE_FIELD_ADDR = "address";
-	public static final String PLACE_FIELD_TELE = "telephone";
-	public static final String PLACE_FIELD_URL = "url";
-	public static final String PLACE_FIELD_DESC = "description";
-	public static final String PLACE_FIELD_POINT_X = "pointx";
-	public static final String PLACE_FIELD_POINT_Y = "pointy";
+//	public static final String PLACE_FIELD_NAME = "name";
+//	public static final String PLACE_FIELD_CATE = "category";
+//	public static final String PLACE_FIELD_ADDR = "address";
+//	public static final String PLACE_FIELD_TELE = "telephone";
+//	public static final String PLACE_FIELD_URL = "url";
+//	public static final String PLACE_FIELD_DESC = "description";
+//	public static final String PLACE_FIELD_POINT_X = "pointx";
+//	public static final String PLACE_FIELD_POINT_Y = "pointy";
 	
 	public Connection getConnection(String baseUrl, String id, String passwd){
 		Connection con = null;
@@ -234,6 +234,7 @@ public class TFDDBController extends DBController{
 		String delim = ",";
 		return "(" + StringUtil.join(new ArrayList<String>(data.keySet()), delim) + ")";
 	}
+	
 	public static String generateValues(Map<String, String> data){
 		String delim = ",";
 		ArrayList<String> temp = new ArrayList<String>();
@@ -249,21 +250,4 @@ public class TFDDBController extends DBController{
 			temp.add("?");
 		return "(" + StringUtil.join(temp, delim) + ")";
 	}
-	public void connect(String tableName) throws Exception {
-
-	}
-	
-	public static void main(String[] args){
-		ArrayList<String> test = new ArrayList<String>();
-		test.add("name1");
-		test.add("name2");
-		test.add("name3");
-		test.add("name4");
-		test.add("name5");
-		test.add("name6");
-		
-		System.out.println(StringUtil.join(test, ","));
-		
-	}
-
 }

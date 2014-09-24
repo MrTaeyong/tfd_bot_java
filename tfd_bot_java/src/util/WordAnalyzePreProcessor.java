@@ -4,7 +4,7 @@
  * @Date		: 2014. 7. 16
  * @Author		: Taeyong
  */
-package analyzer;
+package util;
 
 /**
  * @Class		: WordAnalyzePreProcessor

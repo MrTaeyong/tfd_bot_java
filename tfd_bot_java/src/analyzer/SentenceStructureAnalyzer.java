@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.chasen.mecab.Tagger;
 
+import util.WordAnalyzePreProcessor;
+
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 import controller.DBController;

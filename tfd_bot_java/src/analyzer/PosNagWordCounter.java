@@ -20,12 +20,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.chasen.mecab.Node;
 import org.chasen.mecab.Tagger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import util.WordAnalyzePreProcessor;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
@@ -50,7 +51,7 @@ public class PosNagWordCounter extends TextMining{
 	}
 
 	@Override
-	Map<String, Integer> wordCount(ArrayList<String> list) {
+	Map<String, Integer> wordCount(List<String> list) {
 		return null;
 	}
 	
@@ -59,7 +60,7 @@ public class PosNagWordCounter extends TextMining{
 	 * @param list 평점 + "\t" + 댓글 형태 문자열의 리스트
 	 * @return 전체 리스트에서 동일한 단어가 등장한 횟수를 단어와 횟수를 묶어 반환
 	 */
-	public Map<String, Word> wordCount(List<String> list){		
+	public Map<String, Word> wordCountFromRatingComment(List<String> list){		
 		Map<String, Word> word = new TreeMap<String, Word>(new _ValueComparator());
 		
 		for(int i = 0; i < list.size(); i++){
@@ -376,17 +377,6 @@ public class PosNagWordCounter extends TextMining{
 		return null;
 	}
 	
-	public void temp() throws CommunicationsException{
-		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
-		List<Map<String, String>> place = dbcon.getData("select name from place_info where update_flag=1");
-		
-		for(Map<String, String> p : place) {
-			String name = p.get("name");
-			List<Map<String, String>> image = dbcon.getData("select place_name, link from place_image where link <> '' and place_name='"+ name + "' limit 1");
-			dbcon.queryExecute("update place_info set image_url='" + image.get(0).get("link") + "' where name='" + name + "'");
-		}
-	}
-	
 	public void deleteInvalidLink() {
 		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		dbcon.queryExecute("delete from place_image where link not like '%.jpg%' and link not like '%.png%' and link not like '%.gif%' and link not like '%.jpeg%'");
@@ -405,7 +395,7 @@ public class PosNagWordCounter extends TextMining{
 		
 		// DB를 통해 평점 계산방법
 //		List<String> list = counter.getTextFromDB(new LocalDBController());
-//		List<String> list = counter.getBalancedTextFromDB(new LocalDBController());
+//		List<String> list = counter.getBalancedTextFromDB(DBController.newInstance(DBController.Type.TFD));
 		
 //		Map<String, Word> result = counter.wordCount(list);
 //		fw.write("total : " + Word.total + "\n");
@@ -428,10 +418,5 @@ public class PosNagWordCounter extends TextMining{
 //		for(String word : result)
 //			fw.write(word + "\n");
 //		fw.close();
-		try {
-			counter.temp();
-		} catch (CommunicationsException e) {
-			e.printStackTrace();
-		}
 	}
 }

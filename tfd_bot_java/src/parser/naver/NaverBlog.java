@@ -7,7 +7,6 @@
 package parser.naver;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,28 +34,6 @@ class NaverBlog extends NaverSearch{
 	private String nextXmlData; 
 	
 	private WebClient webClient = new WebClient(); //JavaScript 파싱을 위한 객체
-	
-	public static enum FieldName {
-		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
-		BLOG_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
-		PLACE_NAME("place_name"), PLACE_IMAGE("link"), BLOG_TODAY_COUNT("today_count"),
-		BLOG_SYMPATHY_COUNT("sympathy_count");
-		String value;
-		FieldName(String value){
-			this.value = value;
-		}
-		public String getValue(){
-			return value;
-		}
-	}
-	
-	public static enum CategoryName {
-		CAFFE("카페"), RESTAURANT("음식점"), CULTURE("문화,예술"), PUB("술집");
-		String value;
-		CategoryName(String value){
-			this.value = value;
-		}
-	}
 	
 	public NaverBlog(){
 		super();

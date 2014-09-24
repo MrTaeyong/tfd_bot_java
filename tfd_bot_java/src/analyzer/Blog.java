@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -62,7 +63,7 @@ public class Blog extends TextMining{
 	 * @see analyzer.TextMining#wordCount(java.util.ArrayList)
 	 */
 	@Override
-	Map<String, Integer> wordCount(ArrayList<String> list) {
+	Map<String, Integer> wordCount(List<String> list) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -107,5 +108,4 @@ public class Blog extends TextMining{
 	        } // returning 0 would merge keys
 	    }
 	}
-
 }

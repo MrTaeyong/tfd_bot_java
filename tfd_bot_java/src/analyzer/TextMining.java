@@ -6,7 +6,7 @@
  */
 package analyzer;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +32,7 @@ abstract public class TextMining {
 	}
 	
 	abstract Map<String, Integer> wordCount(String text);
-	abstract Map<String, Integer> wordCount(ArrayList<String> list);
+	abstract Map<String, Integer> wordCount(List<String> list);
 	
 	
 }

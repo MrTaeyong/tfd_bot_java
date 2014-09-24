@@ -38,7 +38,8 @@ public class LocalPlaceParser {
 				writer.write(place + "\n");
 		} catch (IOException e) {
 //			e.printStackTrace();
-		} finally {
+		} catch (NullPointerException e) {
+		}finally {
 			try {
 				writer.close();
 			} catch (IOException e) {}

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import parser.naver.FieldName;
 import parser.naver.NaverSearch;
 import controller.DBController.Type;
 
@@ -20,28 +21,6 @@ public class BlogParseManager extends Thread {
 	static {
 		_dbcon = DBController.newInstance(Type.TFD);
 	}
-	
-	public static enum FieldName {
-		TITLE("title"), BLOG_CONTENT("blogContent"), BLOGGER_NAME("bloggerName"),
-		BLOGGER_LINK("bloggerLink"), BLOG_DATE("date"), BLOG_IMAGES("blogImage"),
-		PLACE_NAME("place_name"), PLACE_IMAGE("link"), TODAY_COUNT("today_count"),
-		SYMPATHY_COUNT("sympathy_count");
-		String value;
-		FieldName(String value){
-			this.value = value;
-		}
-		public String getValue(){
-			return value;
-		}
-	}
-	
-	public static enum CategoryName {
-		CAFFE("카페"), RESTAURANT("음식점"), CULTURE("문화,예술"), PUB("술집");
-		String value;
-		CategoryName(String value){
-			this.value = value;
-		}
-	}	
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -82,11 +61,11 @@ public class BlogParseManager extends Thread {
 				temp.put("place_name", placeName);
 				temp.put("title", blogContent.get(FieldName.TITLE.value));
 				temp.put("writer", blogContent.get(FieldName.BLOGGER_NAME.value));
-				temp.put("url", blogContent.get(FieldName.BLOGGER_LINK.value));
+				temp.put("url", blogContent.get(FieldName.BLOG_LINK.value));
 				temp.put("content", blogContent.get(FieldName.BLOG_CONTENT.value));
 				temp.put("date", blogContent.get(FieldName.BLOG_DATE.value));
-				temp.put("today_count", blogContent.get(FieldName.TODAY_COUNT.value));
-				temp.put("sympathy_count", blogContent.get(FieldName.SYMPATHY_COUNT.value));
+				temp.put("today_count", blogContent.get(FieldName.BLOG_TODAY_COUNT.value));
+				temp.put("sympathy_count", blogContent.get(FieldName.BLOG_SYMPATHY_COUNT.value));
 				query.add(temp);
 				_dbcon.insertData(_BLOG_TABLE_NAME, query);
 				temp.clear();
@@ -236,8 +215,4 @@ public class BlogParseManager extends Thread {
 	public void run() {
 		getBlog();
 	}
-//	public static void main(String[] args) {
-//		BlogParseManager bpm = new BlogParseManager();
-//		while(bpm.getBlog());
-//	}
 }
