@@ -55,6 +55,7 @@ public class CharacteristicExtractor extends TextMining{
 		List<String> tempResult = _getBlogContentFromDB();
 		if(tempResult == null)
 			return false;
+//		List<String> tempResult = _get();
 		Map<String, Integer> result = wordCount(tempResult);
 		if(result == null)
 			return true;
@@ -81,8 +82,7 @@ public class CharacteristicExtractor extends TextMining{
 		} catch(NullPointerException e) {
 			return false;
 		}
-	}
-	
+	}	
 	
 	/**
 	 * 아직 특성추출이 완료안된 장소의 블로그를 반환해 줌 

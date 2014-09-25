@@ -178,19 +178,19 @@ class NaverBlog extends NaverSearch{
 	 * @return 성공 : 방문자수, 실패 : 0
 	 */
 	private int _getBlogTodayCount(Document blogDoc, String blogUrl) {
-		try {
-			Element element = blogDoc.getElementById("blog-counter");
-			element.text();
-//			WebClient webClient = new WebClient();
-			HtmlPage page = webClient.getPage(blogUrl);
-			DomElement visit = page.getElementById("blog-counter");
-			String[] count = visit.asText().split("\n"); 
-			return Integer.parseInt(count[0].replaceAll(",", ""));
-		} catch (Exception e) {
-			return 0;
-		} finally {
-			webClient.closeAllWindows();
-		}
+		return 0;
+//		try {
+//			Element element = blogDoc.getElementById("blog-counter");
+//			element.text();
+//			HtmlPage page = webClient.getPage(blogUrl);
+//			DomElement visit = page.getElementById("blog-counter");
+//			String[] count = visit.asText().split("\n"); 
+//			return Integer.parseInt(count[0].replaceAll(",", ""));
+//		} catch (Exception e) {
+//			return 0;
+//		} finally {
+//			webClient.closeAllWindows();
+//		}
 		
 	}
 	
