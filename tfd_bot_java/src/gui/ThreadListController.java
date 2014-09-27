@@ -47,6 +47,10 @@ public class ThreadListController extends Thread {
 		}
 	}
 	
+	/**
+	 * 현재 실행중인 스레드 갯수를 반환
+	 * @return
+	 */
 	public int getThreadCount() {
 		return threadCount;
 	}
@@ -66,6 +70,9 @@ public class ThreadListController extends Thread {
 		}
 	}
 	
+	/**
+	 * 현재 실행중인 스레드에 인터럽트를 호출하고 DB의 update flag를 0으로 돌려놓음
+	 */
 	public void stopThread() {
 		DBController dbcon = DBController.newInstance(DBController.Type.TFD);
 		String placeName;

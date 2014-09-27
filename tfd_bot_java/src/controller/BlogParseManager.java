@@ -55,12 +55,14 @@ public class BlogParseManager extends Thread {
 			try {
 				Thread.sleep(0); // 외부에서 interrupt() 요청시 여기에서 멈출 수 있도록 sleep 삽입
 			} catch (InterruptedException e) {}
+			
+			// 블로그의 유효성을 검사하고 유효한 블로그의 리스트를 받음
 			result = (ArrayList<Map<String, String>>) _filterBlog(result, placeName, addr, local);
 			
 			temp = new HashMap<String, String>();
 			ArrayList<Map<String, String>> query = new ArrayList<Map<String, String>>();
 			for(Map<String, String> blogContent : result){
-				// 장소정보 입력을 위한 작업
+				// DB에 장소정보 입력을 위한 작업
 				temp.put("place_name", placeName);
 				temp.put("title", blogContent.get(FieldName.TITLE.value));
 				temp.put("writer", blogContent.get(FieldName.BLOGGER_NAME.value));
@@ -107,7 +109,7 @@ public class BlogParseManager extends Thread {
 		 * 1. 제목에서 상호명과 지역명을 포함하는 블로그 파싱 > 부정확
 		 * 2. 제목에서 상호명을 포함하고 지점명이나 지역명을 포함하는 블로그 중 본문에 지점명or지역명or상호의 주소를 포함 > 부정확
 		 * 3. 제목에서 상호명을 포함하는 블로그 중 본문에 상호의 주소를 포함 > 정확 (but 갯수가 적음)
-		 * 4. 3번 까지 검사하고 본문에서 주소가 없으면 지역명과 분점명을 제외한 상호명과 and연산 (시도중)
+		 * 4. 3번 까지 검사하고 본문에서 주소가 없으면 지역명과 분점명을 제외한 상호명과 and연산
 		 */
 		String[] placeNameToken = placeName.split(" ");
 		String branch; // 상점의 분점 표시
@@ -137,15 +139,6 @@ public class BlogParseManager extends Thread {
 			for(int i = 0; i < branchIndex; i++)
 				if(title.indexOf(placeNameToken[i]) < 0)
 					return false;
-			
-//			// 지점, 지역 or 조건 검사
-//			int i;
-//			for(i = 1; i < placeNameToken.length; i++)
-//				if(title.indexOf(placeNameToken[i]) >= 0)
-//					break;
-//			
-//			if(i >= placeNameToken.length && title.indexOf(local) < 0)
-//				return false;
 		}
 		
 		// 블로그 본문에서 주소 검사
@@ -228,6 +221,12 @@ public class BlogParseManager extends Thread {
 		}
 	}
 	
+	/**
+	 * 장소명에 분점명이 있으면 장소명을 그대로 반환하고 분점명이 없으면 '지역명 + 장소명'을 반환
+	 * @param placeName
+	 * @param local
+	 * @return
+	 */
 	private String _getKeyword(String placeName, String local) {
 		String[] token = placeName.split(" ");
 		int branchIndex = -1;
@@ -241,18 +240,20 @@ public class BlogParseManager extends Thread {
 			return local + " " + placeName;
 		else
 			return placeName;
-//		placeName = "";
-//		for(int i = 0; i < branchIndex; i++) {
-//			placeName += token[i];
-//		}
-//		
-//		return placeName;
 	}
 	
+	/**
+	 * 현재 파싱이 진행 중인 장소명을 반환
+	 * @return
+	 */
 	public String getCurrentPlaceName() {
 		return currentPlaceName;
 	}
 	
+	/**
+	 * 현재 파싱이 진행 중인 API의 start번호를 반환
+	 * @return
+	 */
 	public int getCurrentStartNumber() {
 		return currentStartNumber;
 	}

@@ -36,6 +36,11 @@ class NaverLocal extends NaverSearch{
 		display = 100;
 	}
 	
+	/**
+	 * 한번 호출될 때마다 최대 100개씩 장소 리스트를 가져온다
+	 * @param keyword 장소 검색을 위한 키워드
+	 * @return 성공 : 장소 리스트, 실패 : null
+	 */
 	public Object getResult(String keyword) {
 		NaverConnector connector;
 		String xmlData;
@@ -43,10 +48,10 @@ class NaverLocal extends NaverSearch{
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_LOCAL);
 		
-		if(start == 1)
+//		if(start == 1)
 			xmlData = (String)connector.connect(keyword);
-		else
-			xmlData = nextXmlData;
+//		else
+//			xmlData = nextXmlData;
 		
 		xmlData = (String)connector.connect(keyword, start, display);
 
@@ -61,11 +66,16 @@ class NaverLocal extends NaverSearch{
 		if(xmlData == null)
 			return null;
 		
-		nextXmlData = (String)connector.connect(keyword);
+//		nextXmlData = (String)connector.connect(keyword);
 		
 		return _getData(xmlData);
 	}
 	
+	/**
+	 * 네이버 API의 결과 XML로 부터 필요한 블로그 정보를 모두 파싱
+	 * @param xmlData 네이버 API에서 제공된 장소 XML
+	 * @return
+	 */
 	private ArrayList<Map<String, String>> _getData(String xmlData){
 		if(xmlData == null || xmlData.length() < 1)
 			return null;
@@ -82,7 +92,7 @@ class NaverLocal extends NaverSearch{
 			resultMap.put("description", e.getElementsByTag("description").text().replaceAll("(<b>|</b>)", ""));
 			resultMap.put("url", _getLink(e.toString()));
 			GeoPoint gp = CoordinatesConverter.katechToWgs84(Integer.parseInt(e.getElementsByTag("mapx").text()), Integer.parseInt(e.getElementsByTag("mapy").text()));
-			resultMap.put("pointx", String.format("%.8f", gp.getX())); 
+			resultMap.put("pointx", String.format("%.8f", gp.getX()));
 			resultMap.put("pointy", String.format("%.8f", gp.getY()));
 			resultMap.put("image_url", "");
 			resultList.add(resultMap);
@@ -90,6 +100,11 @@ class NaverLocal extends NaverSearch{
 		return resultList;
 	}
 	
+	/**
+	 * 네이버 API 결과 XML에서 장소 홈페이지 URL을 추출
+	 * @param item 네이버 API에서 제공된 XML의 <item>태그 내용
+	 * @return 추출된 URL
+	 */
 	private String _getLink(String item){
 		int start, end;
 		start = item.indexOf("<link />") + 8;

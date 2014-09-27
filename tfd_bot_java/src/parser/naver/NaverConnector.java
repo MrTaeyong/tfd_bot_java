@@ -6,12 +6,9 @@
  */
 package parser.naver;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +39,11 @@ public class NaverConnector extends Connector{
 		_display = 100;
 	}
 	
+	/**
+	 * 네이버 API를 리퀘스트하여 결과를 얻는 메소드
+	 * @param keyword 네이버 API에 사용할 키워드
+	 * @return 네이버 API의 결과 XML을 String형태로 반환
+	 */
 	@Override
 	public Object connect(String keyword) {
 		// TODO Auto-generated method stub
@@ -52,6 +54,7 @@ public class NaverConnector extends Connector{
 			 
 			URL url = new URL(completeUrl);
 			Document doc = Jsoup.parse(url, 10000);
+			
 			// Check range of contents
 			Elements elements = doc.getElementsByTag("total");
 			try{
@@ -75,12 +78,24 @@ public class NaverConnector extends Connector{
 		return null;
 	}
 	
+	/**
+	 * keyword인자만 받는 connect함수에 start, display인자를 설정하고 싶을 때 사용할 수 있는 메소드
+	 * @param keyword 네이버 API에 사용할 키워드
+	 * @param start 네비어 API에서 검색 시작 번호
+	 * @param display 네이버 API에서 화면표시 리스트 갯수
+	 * @return 네이버 API의 결과 XML을 String형태로 반환
+	 */
 	public Object connect(String keyword, int start, int display){
 		this._start = start;
 		this._display = display;
 		return connect(keyword);
 	}
 	
+	/**
+	 * 네이버 API를 리퀘스트할 주소를 만드는 메소드
+	 * @param keyword
+	 * @return
+	 */
 	private String _getParam(String keyword){
 		return String.format("key=%s&query=%s&display=%d&start=%d",
 				_API_KEY, keyword.replace(" ", "+"), _display, _start);

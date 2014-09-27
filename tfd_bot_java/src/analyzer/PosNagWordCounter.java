@@ -33,6 +33,8 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import controller.DBController;
 
 /**
+ * 단언 감성을 분석하여 오피니언 마이닝을 하기 위해 평점에 따른 긍정/부정 단어를 나누는 클래스
+ * (오피니언 마이닝의 구현방법 변화로 사용되지 않음)
  * @Class	: PosNagWordCounter
  * @Date	: 2014. 6. 28.
  * @Author	: Taeyong

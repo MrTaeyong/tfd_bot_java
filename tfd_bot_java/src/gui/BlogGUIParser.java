@@ -8,6 +8,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+/**
+ * 크롤링봇의 GUI
+ * @author taeyong
+ *
+ */
 public class BlogGUIParser extends JFrame {
 	public JTextField threadCount;
 	public JTextArea textLog;

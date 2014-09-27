@@ -20,6 +20,11 @@ abstract public class NaverSearch implements ParserInterface{
 	abstract public Object getResult(String keyword);
 	abstract public Object getCurrentState();
 	
+	/**
+	 * 요청한 타입의 검색 객체를 반환
+	 * @param type 원하는 검색 객체 타입
+	 * @return
+	 */
 	public static NaverSearch getInstance(SearchType type){
 		switch(type){
 		case NAVER_LOCAL : return new NaverLocal();

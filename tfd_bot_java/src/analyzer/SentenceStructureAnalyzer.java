@@ -27,6 +27,8 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import controller.DBController;
 
 /**
+ * 블로그의 긴 글에서 오피니언 마이닝에 필요한 유효한 문장을 골라내고 장소의 특징을 추출하는 클래스
+ * (현재는 사용되지 않음)
  * @Class	: SentenceStructureAnalyzer
  * @Date	: 2014. 8. 15.
  * @Author	: Taeyong
@@ -42,24 +44,7 @@ public class SentenceStructureAnalyzer {
 	private final Tagger tagger;
 	
 	static {
-		System.load(System.getProperty("java.library.path") + "/libMeCab.so");
-		
-		// 단어 감정 사전을 로드
-//		_wordEmotionDictionary = new HashMap<String, Double>();
-//		BufferedReader br;
-//		try {
-//			br = new BufferedReader(new FileReader(_wordEmotionDictionaryPath));
-//			String temp;
-//			while((temp = br.readLine()) != null){
-//				String[] token = temp.split("\t");
-//				String key = token[0] + "\t" + token[1];
-//				_wordEmotionDictionary.put(key, Double.parseDouble(token[6]));
-//			}
-//			br.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-		
+		System.load(System.getProperty("java.library.path") + "/libMeCab.so");		
 		
 		_wordEmotionDictionary = new HashSet<String>();
 		BufferedReader br;

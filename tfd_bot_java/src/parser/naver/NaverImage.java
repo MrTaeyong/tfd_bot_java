@@ -19,6 +19,11 @@ public class NaverImage extends NaverSearch {
 		super();
 	}
 
+	/**
+	 * 네이버 이미지 검색에서 이미지 리스트를 가져온다
+	 * @param keyword 이미지 검색을 위한 키워드
+	 * @return 성공 : 이미지 리스트, 실패 : null
+	 */
 	@Override
 	public Object getResult(String keyword) {
 		int start = 1, display = 1;
@@ -38,6 +43,11 @@ public class NaverImage extends NaverSearch {
 		return null;
 	}
 	
+	/**
+	 * 네이버 이미지 검색 API의 결과인 XML에서 이미지 주소와 이미지 사이즈를 가져온다.
+	 * @param xmlData 네이버 이미지 검색 API 결과 XML
+	 * @return XML에 포함된 이미지의 정보를 반환
+	 */
 	private ArrayList<Map<String, String>> _getData(String xmlData){
 		if(xmlData == null || xmlData.length() < 1)
 			return null;
@@ -55,6 +65,11 @@ public class NaverImage extends NaverSearch {
 		return resultList;
 	}
 	
+	/**
+	 * 네이버 API에서 준 이미지 링크에서 필요한 부분을 추출
+	 * @param link 네이버 API에서 제공한 이미지 링크
+	 * @return
+	 */
 	private String _getImageLink(String link){
 		int start = link.indexOf("ugc?q=") + 6;
 		return link.substring(start);

@@ -18,6 +18,8 @@ import twitter4j.QueryResult;
 import twitter4j.Status;
 
 /**
+ * J4Twitter 라이브러리를 사용하여 트위터 내용을 파싱하는 클래스
+ * (현재 사용되지 않음)
  * @Class	:TwitterSearch
  * @Date	: 2014. 06. 02.
  * @Author	: Taeyong

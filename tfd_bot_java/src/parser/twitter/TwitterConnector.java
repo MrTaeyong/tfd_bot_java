@@ -19,6 +19,12 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
+/**
+ * J4Twitter 라이브러리를 사용하여 트위터 내용을 파싱하는 클래스
+ * (현재 사용되지 않음)
+ * @author taeyong
+ *
+ */
 public class TwitterConnector extends Connector{
 	private final String _OAUTH_CONSUMER_KEY = "XPxsGQGrLsXJCqVo4Kx7VvCtD";
 	private final String _OAUTH_CONSUMER_SECRET = "0U6APNdUXLbKv8GC6jNME0qL3jXCfNfeW6d6MABEwmJx8ANV58";

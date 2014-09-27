@@ -115,6 +115,11 @@ public class TFDDBController extends DBController{
 		
 	}
 	
+	/**
+	 * select쿼리에 대한 결과를 리스트로 반환
+	 * @param query select쿼리
+	 * @throws DB연결에 문제가 있을 때 예외를 던짐
+	 */
 	public List<Map<String, String>> getData(String query) throws com.mysql.jdbc.exceptions.jdbc4.CommunicationsException {
 		List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 		String[] fields;
@@ -123,17 +128,21 @@ public class TFDDBController extends DBController{
 		ResultSet rs = null;
 		
 		try{
+			// select 쿼리에 포함된 필드명을 추출
 			fields = query.substring(query.indexOf("select") + 7, query.indexOf("from")).split(",");
 		} catch (Exception e){
 			return null;
 		}
 		
 		try{
+			// DB와 연결
 			con = DriverManager.getConnection(_BASE_URL, "tfd", "tfd1234");
 			
+			// select 쿼리를 실행
 			stmt = con.createStatement();
 			rs = stmt.executeQuery(query);
 			
+			// select 쿼리 결과를 결과리스트에 저장
 			while(rs.next()){
 				Map<String, String> record = new HashMap<String, String>();
 				for(String field : fields){
@@ -142,14 +151,15 @@ public class TFDDBController extends DBController{
 				}
 				result.add(record);
 			}
-			if(result.size() > 0)
-				return result;
-			return null;
+			if(result.size() <= 0)
+				result = null;
+			return result;
 		} catch (com.mysql.jdbc.exceptions.jdbc4.CommunicationsException e) {
 			throw e; // 네트워크 상태 등의 이유로 DB와 접속되지 않을 때
 		} catch (Exception exception){
 			return null;
 		} finally {
+			// 모든 DB연결을 종료
 			try {
 				con.close();
 				stmt.close();
@@ -212,6 +222,10 @@ public class TFDDBController extends DBController{
 		}
 	}
 	
+	/**
+	 * 반환값이 필요하지 않은 쿼리를 수행
+	 * ex) update 쿼리
+	 */
 	public void queryExecute(String query) {
 		Connection con = null;
 

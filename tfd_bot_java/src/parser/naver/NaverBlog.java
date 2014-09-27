@@ -31,9 +31,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 class NaverBlog extends NaverSearch{
 	private int start;
 	private int display;
-	private String nextXmlData; 
+//	private String nextXmlData; 
 	
-	private WebClient webClient = new WebClient(); //JavaScript 파싱을 위한 객체
+//	private WebClient webClient = new WebClient(); //JavaScript 파싱을 위한 객체
 	
 	public NaverBlog(){
 		super();
@@ -43,7 +43,7 @@ class NaverBlog extends NaverSearch{
 
 	/**
 	 * 한번 호출될 때마다 최대 100개씩 블로그 리스트를 가져온다
-	 * @param keyword
+	 * @param keyword 블로그 검색을 위한 키워드
 	 * @return 성공 : 블로그 리스트, 실패 : null
 	 */
 	public Object getResult(String keyword) {
@@ -52,10 +52,10 @@ class NaverBlog extends NaverSearch{
 		 
 		connector = (NaverConnector) Connector.getInstance(Connector.NAVER_BLOG);
 		
-		if(start == 1)
+//		if(start == 1)
 			xmlData = (String)connector.connect(keyword, start, display);
-		else
-			xmlData = nextXmlData;
+//		else
+//			xmlData = nextXmlData;
 		
 		start += 100;
 		if(start == 901)
@@ -68,7 +68,7 @@ class NaverBlog extends NaverSearch{
 		if(xmlData == null)
 			return null;
 		
-		nextXmlData = (String)connector.connect(keyword, start, display);
+//		nextXmlData = (String)connector.connect(keyword, start, display);
 		
 		return _getData(xmlData);
 	}
@@ -94,22 +94,23 @@ class NaverBlog extends NaverSearch{
 			writer = e.getElementsByTag("bloggername").text();
 			
 			try{
-				link = _getLink(e.toString());
+				link = _getLink(e.toString()); // 블로그의 주소를 
 			}catch (StringIndexOutOfBoundsException exception){
 				fail++;
 				continue;
 			}
 			
-			blogContent = _getBlogContent(link);
+			blogContent = _getBlogContent(link); // 블로그에 직접 접속하여 필요한 정보를 파싱
 			if(blogContent == null){
 				fail++;
 				continue;
 			}
 			success++;
+			
 			resultMap = new HashMap<String, String>();
-			resultMap.putAll(blogContent); // Add blog content
-			resultMap.put(FieldName.TITLE.value, title); // Add title
-			resultMap.put(FieldName.BLOGGER_NAME.value, writer); // Add blogger name
+			resultMap.putAll(blogContent);
+			resultMap.put(FieldName.TITLE.value, title);
+			resultMap.put(FieldName.BLOGGER_NAME.value, writer);
 			resultList.add(resultMap);
 			blogContent = null;
 			resultMap = null;
@@ -173,8 +174,8 @@ class NaverBlog extends NaverSearch{
 	
 	/**
 	 * 블로그에서 위젯에 포함된 방문자 수를 파싱한다
-	 * @param blogDoc
-	 * @param blogUrl
+	 * @param blogDoc 블로그 페이지의 Document
+	 * @param blogUrl 블로그 주소
 	 * @return 성공 : 방문자수, 실패 : 0
 	 */
 	private int _getBlogTodayCount(Document blogDoc, String blogUrl) {
@@ -196,8 +197,8 @@ class NaverBlog extends NaverSearch{
 	
 	/**
 	 * 블로그에서 블로그 공감 갯수를 파싱한다.
-	 * @param blogDoc
-	 * @param logNo
+	 * @param blogDoc 블로그 페이지 Document
+	 * @param logNo 네이버 블로그에서 블로그의 번호
 	 * @return 성공 : 공감 수, 실패 : 0
 	 */
 	private int _getBlogSympathyCount(Document blogDoc, String logNo) {
@@ -209,8 +210,8 @@ class NaverBlog extends NaverSearch{
 	}
 	
 	/**
-	 * 블로그에 포함된 주소에서 주소를 파싱한다
-	 * @param element
+	 * 블로그에 포함된 네이버 지도에서 주소를 파싱한다
+	 * @param element 네이버 지도가 포함되어있는 Element
 	 * @return 성공 : 파싱된 주소, 실패 : 공백
 	 */
 	private String _getAddressInBlog(Element element) {
@@ -241,12 +242,13 @@ class NaverBlog extends NaverSearch{
 	
 	/**
 	 * 블로그에 포함된 이미지 중 유의미한 이미지를 파싱한다
-	 * @param logNo
-	 * @param doc
+	 * @param logNo 네이버 블로그에서 블로그 번호
+	 * @param doc 이미지가 포함되어있는 블로그의 Document
 	 * @return 이미지 주소 리스트
 	 */
 	private String _getImageLinkOfBlog(String logNo, Document doc){
 		String result = "";
+		// 본문에서 img태그를 모두 파싱한 후 "_photoImage" class 속성을 포함한 이미지의 URL을 파싱
 		Elements imageLinks = doc.getElementById("post-view" + logNo).getElementsByTag("img");
 		for(Element image : imageLinks)
 			if(image.attr("class").equals("_photoImage"))
@@ -257,7 +259,7 @@ class NaverBlog extends NaverSearch{
 	
 	/**
 	 * 네이버 API를 통해 얻어온 XML에서 블로그 주소를 파싱 (JSoup이 파싱하지 못함..)
-	 * @param item
+	 * @param item 네이버 API에서 넘겨주는 XML에서 <item>태그에 포함된 내용
 	 * @return 블로그 주소
 	 * @throws StringIndexOutOfBoundsException
 	 */
