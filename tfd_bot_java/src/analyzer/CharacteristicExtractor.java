@@ -62,17 +62,21 @@ public class CharacteristicExtractor extends TextMining{
 			return true;
 		
 		List<Map<String, String>> query = new ArrayList<Map<String, String>>();
+		List<Map<String, String>> charID;
 		Map<String, String> record;
 		String[] tempString;
+		
 		
 		try {
 			// 카운팅된 내용을 DB에 입력
 			for(String parsedWord : result.keySet()) {
 				record = new HashMap<String, String>();
 				tempString = parsedWord.split("\t");
+				charID = _DBCON.getData("select id from characteristic_dictionary_2 where word='" + tempString[0] + "' and feature='" + tempString[1] + "'");
 				record.put("characteristic", tempString[0]);
 				record.put("word_feature", tempString[1]);
 				record.put("place_name", _currentPlaceName);
+				record.put("typical_id", String.valueOf(charID));
 				record.put("count", String.valueOf(result.get(parsedWord)));
 				query.add(record);
 			}
@@ -83,7 +87,7 @@ public class CharacteristicExtractor extends TextMining{
 				_DBCON.queryExecute("update " + _PLACE_TABLE_NAME + " set update_flag=2 where name='" + _currentPlaceName + "'");
 			}
 			return true;
-		} catch(NullPointerException e) {
+		} catch(NullPointerException | CommunicationsException e) {
 			return false;
 		}
 	}	
