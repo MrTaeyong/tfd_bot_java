@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.chasen.mecab.Tagger;
 
@@ -99,22 +98,27 @@ public class CharacteristicExtractor extends TextMining{
 	private List<String> _getBlogContentFromDB() {
 		List<Map<String, String>> queryResult = null;
 		List<String> result;
+		Map<String, Boolean> passedPlaces = new HashMap<String, Boolean>();
 		
 		try {
 			// 무한반복하지 않도록 place_info테이블에 있는 레코드 중 update flag가 1인 장소의 갯수 만큼만 반복
 			_targetRecordCount = Integer.parseInt(_DBCON.getData("select count(*) from " + _PLACE_TABLE_NAME + " where update_flag=1").get(0).get("count(*)"));
-			while(_targetRecordCount > (++_currentProcCount)) {
-				// place_info 테이블에서 update flage가 1인 아무 장소 레코드를 하나 가져옴
+//			while(_targetRecordCount > (++_currentProcCount)) {
+			while(_targetRecordCount > passedPlaces.size()) {
+				// place_info 테이블에서 update flag가 1인 아무 장소 레코드를 하나 가져옴
 				queryResult = _DBCON.getData("select name, category from " + _PLACE_TABLE_NAME + " where update_flag=1 limit " + _currentProcCount + ", 1");
 				_currentPlaceName = queryResult.get(0).get("name");
+				
 				
 				// 가져온 장소의 큰 분류명을 가져옴
 				_currentPlaceCategory = _DBCON.getData("select c_group from " + _CATEGORY_TABLE_NAME + " where sub_group='" + queryResult.get(0).get("category") + "'").get(0).get("c_group");
 				// 가져온 장소의 모든 블로그를 가져옴
 				queryResult = _DBCON.getData("select content from " + _BLOG_TABLE_NAME + " where place_name='" + _currentPlaceName + "'");
 			
-				if(queryResult == null)
+				if(queryResult == null) {
+					passedPlaces.put(_currentPlaceName, true);
 					continue; // 가져온 블로그가 없으면 다른 장소에 대해 처리
+				}
 				else
 					break; // 가져온 블로그가 있으면 while문 종료
 			}
