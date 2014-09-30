@@ -11,26 +11,5 @@
 	<classpathentry kind="lib" path="src/util/twitter4j-core-4.0.1.jar"/>
 	<classpathentry kind="lib" path="mysql-connector-java-5.1.30-bin.jar"/>
 	<classpathentry kind="lib" path="lib/MeCab.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/commons-codec-1.9.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/commons-collections-3.2.1.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/commons-io-2.4.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/commons-lang3-3.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/commons-logging-1.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/cssparser-0.9.14.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/htmlunit-2.15.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/htmlunit-core-js-2.15.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/httpclient-4.3.3.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/httpcore-4.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/httpmime-4.3.3.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/jetty-http-8.1.15.v20140411.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/jetty-io-8.1.15.v20140411.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/jetty-util-8.1.15.v20140411.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/jetty-websocket-8.1.15.v20140411.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/nekohtml-1.9.21.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/sac-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/serializer-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/xalan-2.7.1.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/xercesImpl-2.11.0.jar"/>
-	<classpathentry kind="lib" path="lib/HtmlUnit/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

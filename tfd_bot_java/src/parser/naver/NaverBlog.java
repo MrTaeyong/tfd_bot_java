@@ -19,10 +19,6 @@ import org.jsoup.select.Elements;
 
 import parser.Connector;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-
 /**
  * @Class	: NaverBlog
  * @Date	: 2014. 05. 25. 
