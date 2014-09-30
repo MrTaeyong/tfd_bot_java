@@ -41,7 +41,7 @@ public class BlogParseManager extends Thread {
 			addr = place.get("address");
 			local = place.get("local");
 			currentPlaceName = placeName;
-			_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + placeName + "'"); // 파싱하는 동안 다른 사용자가 동일한 장소를 파싱하지 못하도록 설정
+			_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=3 where name='" + placeName + "'"); // 파싱하는 동안 다른 사용자가 동일한 장소를 파싱하지 못하도록 설정
 		} catch(com.mysql.jdbc.exceptions.jdbc4.CommunicationsException e) {
 			return false;
 		} catch(Exception e) {
@@ -86,11 +86,13 @@ public class BlogParseManager extends Thread {
 			currentStartNumber = (Integer)naverBlogSearcher.getCurrentState();
 		}
 		
-		// 블로그 파싱을 하나도 못한 장소일 경우 update flag를 다시 0으로 복구함
+		// 블로그 파싱을 하나도 못한 장소일 경우 update flag를 다시 0으로 복구하고, 블로그가 있을 경우 1로 설정
 		try {
 			int count = Integer.parseInt(_dbcon.getData("select count(*) from " + _BLOG_TABLE_NAME + " where place_name='" + currentPlaceName + "'").get(0).get("count(*)"));
 			if(count <= 0)
 				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=0 where name='" + currentPlaceName + "'");
+			else
+				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + currentPlaceName + "'");
 		} catch (CommunicationsException e) {
 		}
 		return true;
