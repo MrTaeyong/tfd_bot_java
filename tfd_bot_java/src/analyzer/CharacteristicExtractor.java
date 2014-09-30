@@ -76,7 +76,7 @@ public class CharacteristicExtractor extends TextMining{
 				record.put("characteristic", tempString[0]);
 				record.put("word_feature", tempString[1]);
 				record.put("place_name", _currentPlaceName);
-				record.put("typical_id", String.valueOf(charID));
+				record.put("typical_id", String.valueOf(charID.get(0).get("id")));
 				record.put("count", String.valueOf(result.get(parsedWord)));
 				query.add(record);
 			}
