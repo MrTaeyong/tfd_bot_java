@@ -90,7 +90,7 @@ public class BlogParseManager extends Thread {
 		try {
 			int count = Integer.parseInt(_dbcon.getData("select count(*) from " + _BLOG_TABLE_NAME + " where place_name='" + currentPlaceName + "'").get(0).get("count(*)"));
 			if(count <= 0)
-				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=0 where name='" + currentPlaceName + "'");
+				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=4 where name='" + currentPlaceName + "'");
 			else
 				_dbcon.queryExecute("update " + _PLACE_INFO_TABLE_NAME + " set update_flag=1 where name='" + currentPlaceName + "'");
 		} catch (CommunicationsException e) {

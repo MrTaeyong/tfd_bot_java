@@ -98,7 +98,7 @@ public class CharacteristicExtractor extends TextMining{
 	private List<String> _getBlogContentFromDB() {
 		List<Map<String, String>> queryResult = null;
 		List<String> result;
-		Map<String, Boolean> passedPlaces = new HashMap<String, Boolean>();
+		Set<String> passedPlaces = new HashSet<String>();
 		
 		try {
 			// 무한반복하지 않도록 place_info테이블에 있는 레코드 중 update flag가 1인 장소의 갯수 만큼만 반복
@@ -116,7 +116,7 @@ public class CharacteristicExtractor extends TextMining{
 				queryResult = _DBCON.getData("select content from " + _BLOG_TABLE_NAME + " where place_name='" + _currentPlaceName + "'");
 			
 				if(queryResult == null) {
-					passedPlaces.put(_currentPlaceName, true);
+					passedPlaces.add(_currentPlaceName);
 					continue; // 가져온 블로그가 없으면 다른 장소에 대해 처리
 				}
 				else
